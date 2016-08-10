@@ -57,7 +57,7 @@ static const uint32_t kDefaultMavlinkUdpPort = 14560;
 namespace gazebo {
 
 typedef const boost::shared_ptr<const mav_msgs::msgs::CommandMotorSpeed> CommandMotorSpeedPtr;
-typedef const boost::shared_ptr<const sensor_msgs::msgs::Imu> ImuPtr;
+typedef const boost::shared_ptr<const sensor_msgs::msgs::NavSatFix> GpsPtr;
 typedef const boost::shared_ptr<const lidar_msgs::msgs::lidar> LidarPtr;
 typedef const boost::shared_ptr<const opticalFlow_msgs::msgs::opticalFlow> OpticalFlowPtr;
 
@@ -146,6 +146,7 @@ class GazeboMavlinkInterface : public ModelPlugin {
 
   boost::thread callback_queue_thread_;
   void QueueThread();
+  void GpsCallback(GpsPtr& imu_msg);
   void ImuCallback(ImuPtr& imu_msg);
   void LidarCallback(LidarPtr& lidar_msg);
   void OpticalFlowCallback(OpticalFlowPtr& opticalFlow_msg);
@@ -168,6 +169,7 @@ class GazeboMavlinkInterface : public ModelPlugin {
   double zero_position_armed_[n_out_max];
   int input_index_[n_out_max];
   transport::PublisherPtr joint_control_pub_[n_out_max];
+  common::SphericalCoordinatesPtr spherical_coord_;
 
   transport::SubscriberPtr imu_sub_;
   transport::SubscriberPtr lidar_sub_;

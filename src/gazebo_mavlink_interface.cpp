@@ -395,11 +395,15 @@ void GazeboMavlinkInterface::OnUpdate(const common::UpdateInfo& /*_info*/) {
   velocity_current_W_xy.z = 0;
 
   // Set global reference point
+
+  // if this world has a spherical coordinate
+  spherical_coord_ = world_->GetSphericalCoordinates();
+
+  /*
+  // TODO: Added gazebo GPS plugin. This is temp here.
   // Zurich Irchel Park: 47.397742, 8.545594, 488m
   // Seattle downtown (15 deg declination): 47.592182, -122.316031, 86m
   // Moscow downtown: 55.753395, 37.625427, 155m
-
-  // TODO: Remove GPS message from IMU plugin. Added gazebo GPS plugin. This is temp here.
   // Zurich Irchel Park
   const double lat_zurich = 47.397742 * M_PI / 180;  // rad
   const double lon_zurich = 8.545594 * M_PI / 180;  // rad
@@ -423,6 +427,7 @@ void GazeboMavlinkInterface::OnUpdate(const common::UpdateInfo& /*_info*/) {
    lat_rad = lat_zurich;
     lon_rad = lon_zurich;
   }
+  */
   
   if (current_time.Double() - last_gps_time_.Double() > gps_update_interval_) {  // 5Hz
     // Raw UDP mavlink
