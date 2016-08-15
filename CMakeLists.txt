@@ -157,6 +157,7 @@ set (msgs
   msgs/SensorImu.proto
   msgs/opticalFlow.proto
   msgs/lidar.proto
+  msgs/SensorGps.proto
   msgs/CommandMotorSpeed.proto
   msgs/MotorSpeed.proto
 )

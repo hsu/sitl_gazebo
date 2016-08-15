@@ -19,6 +19,7 @@
  */
 
 
+#include <gazebo/sensors/sensors.hh>
 #include "gazebo_mavlink_interface.h"
 #include "geo_mag_declination.h"
 
@@ -311,6 +312,16 @@ void GazeboMavlinkInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
   mag_W_.y = 0.0;
   mag_W_.z = 0.42741;
 
+  // Setup GPS
+  spherical_coord_ = world_->GetSphericalCoordinates();
+  std::string gps_name = "gps_sensor";
+  if (_sdf->HasElement("gpsSensorName"))
+    gps_name = _sdf->Get<std::string>("gpsSensorName");
+  sensors::SensorManager *mgr = sensors::SensorManager::Instance();
+  mgr->Update();
+  gps_sensor = std::dynamic_pointer_cast<sensors::GpsSensor>(
+        mgr->GetSensor(gps_name));
+
   //Create socket
   // udp socket data
   mavlink_addr_ = htonl(INADDR_ANY);
@@ -385,21 +396,15 @@ void GazeboMavlinkInterface::OnUpdate(const common::UpdateInfo& /*_info*/) {
 
   last_time_ = current_time;
 
+  // Set global reference point
+
+#if 1
   //send gps
   math::Pose T_W_I = model_->GetWorldPose(); //TODO(burrimi): Check tf.
   math::Vector3 pos_W_I = T_W_I.pos;  // Use the models' world position for GPS and pressure alt.
-
   math::Vector3 velocity_current_W = model_->GetWorldLinearVel();  // Use the models' world position for GPS velocity.
-
   math::Vector3 velocity_current_W_xy = velocity_current_W;
   velocity_current_W_xy.z = 0;
-
-  // Set global reference point
-
-  // if this world has a spherical coordinate
-  spherical_coord_ = world_->GetSphericalCoordinates();
-
-  /*
   // TODO: Added gazebo GPS plugin. This is temp here.
   // Zurich Irchel Park: 47.397742, 8.545594, 488m
   // Seattle downtown (15 deg declination): 47.592182, -122.316031, 86m
@@ -427,8 +432,27 @@ void GazeboMavlinkInterface::OnUpdate(const common::UpdateInfo& /*_info*/) {
    lat_rad = lat_zurich;
     lon_rad = lon_zurich;
   }
-  */
-  
+  alt_m = (pos_W_I.z + alt_zurich);
+#else
+
+  // This is still broken becuase Gazebo defaults to ENU, and 
+  // PX4 assumes NED. We need to patch this, starting with
+  // https://bitbucket.org/osrf/sdformat/pull-requests/284/
+  // Then add implementation for different world frame orientation
+  // similar to what we are doing for the IMU sensor frame. See
+  // https://bitbucket.org/osrf/gazebo/branches/compare/issue_1959_gazebo7%0Dgazebo7#chg-gazebo/common/SphericalCoordinates.cc
+
+  // if this world has a spherical coordinate
+  lat_rad = gps_sensor->Latitude().Radian();
+  lon_rad = gps_sensor->Longitude().Radian();
+  alt_m = gps_sensor->Altitude();
+  // Use the models' world position for GPS velocity.
+  math::Vector3 velocity_current_W = model_->GetWorldLinearVel();
+  math::Vector3 velocity_current_W_xy = velocity_current_W;
+  velocity_current_W_xy.z = 0;
+
+#endif
+
   if (current_time.Double() - last_gps_time_.Double() > gps_update_interval_) {  // 5Hz
     // Raw UDP mavlink
     mavlink_hil_gps_t hil_gps_msg;
@@ -436,7 +460,7 @@ void GazeboMavlinkInterface::OnUpdate(const common::UpdateInfo& /*_info*/) {
     hil_gps_msg.fix_type = 3;
     hil_gps_msg.lat = lat_rad * 180 / M_PI * 1e7;
     hil_gps_msg.lon = lon_rad * 180 / M_PI * 1e7;
-    hil_gps_msg.alt = (pos_W_I.z + alt_zurich) * 1000;
+    hil_gps_msg.alt = alt_m * 1000;
     hil_gps_msg.eph = 100;
     hil_gps_msg.epv = 100;
     hil_gps_msg.vel = velocity_current_W_xy.GetLength() * 100;
