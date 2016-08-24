@@ -27,11 +27,29 @@ namespace gazebo {
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboMavlinkInterface);
 
-GazeboMavlinkInterface::~GazeboMavlinkInterface() {
+GazeboMavlinkInterface::GazeboMavlinkInterface()
+    : ModelPlugin()
+    , received_first_referenc_(false)
+    , namespace_(kDefaultNamespace)
+    , motor_velocity_reference_pub_topic_(kDefaultMotorVelocityReferencePubTopic)
+    , imu_sub_topic_(kDefaultImuTopic)
+    , opticalFlow_sub_topic_(kDefaultOpticalFlowTopic)
+    , lidar_sub_topic_(kDefaultLidarTopic)
+    , left_elevon_joint_(nullptr)
+    , right_elevon_joint_(nullptr)
+    , elevator_joint_(nullptr)
+    , propeller_joint_(nullptr)
+{
+}
+
+GazeboMavlinkInterface::~GazeboMavlinkInterface()
+{
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
 }
 
-void GazeboMavlinkInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
+void GazeboMavlinkInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+{
+  std::string gps_sub_topic;
   // Store the pointer to the model.
   model_ = _model;
 
@@ -49,6 +67,7 @@ void GazeboMavlinkInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
 
   getSdfParam<std::string>(_sdf, "motorSpeedCommandPubTopic", motor_velocity_reference_pub_topic_,
                            motor_velocity_reference_pub_topic_);
+<<<<<<< HEAD
   getSdfParam<std::string>(_sdf, "imuSubTopic", imu_sub_topic_, imu_sub_topic_);
   getSdfParam<std::string>(_sdf, "lidarSubTopic", lidar_sub_topic_, lidar_sub_topic_);
   getSdfParam<std::string>(_sdf, "opticalFlowSubTopic",
@@ -349,6 +368,8 @@ void GazeboMavlinkInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
     }
   }
 
+  getSdfParam<std::string>(_sdf, "gpsPubTopic", gps_sub_topic, gps_sub_topic);
+
   if (_sdf->HasElement("cgo3_mount_joint")) {
     std::string gimbal_yaw_joint_name = _sdf->GetElement("cgo3_mount_joint")->Get<std::string>();
     gimbal_yaw_joint_ = model_->GetJoint(gimbal_yaw_joint_name);
@@ -384,20 +405,16 @@ void GazeboMavlinkInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(
       boost::bind(&GazeboMavlinkInterface::OnUpdate, this, _1));
 
-  // Subscriber to IMU sensor_msgs::Imu Message and SITL message
+  // Subscriber to IMU sensor_msgs::Imu Message and SITL's HilControl message
   imu_sub_ = node_handle_->Subscribe("~/" + model_->GetName() + imu_sub_topic_, &GazeboMavlinkInterface::ImuCallback, this);
   lidar_sub_ = node_handle_->Subscribe("~/" + model_->GetName() + lidar_sub_topic_, &GazeboMavlinkInterface::LidarCallback, this);
   opticalFlow_sub_ = node_handle_->Subscribe("~/" + model_->GetName() + opticalFlow_sub_topic_, &GazeboMavlinkInterface::OpticalFlowCallback, this);
+  gps_sub_ = node_handle_->Subscribe("~/" + model_->GetName() + gps_sub_topic, &GazeboMavlinkInterface::GPSCallback, this);
   
-  // Publish gazebo's motor_speed message
+  // Publish HilSensor Message and gazebo's motor_speed message
   motor_velocity_reference_pub_ = node_handle_->Advertise<mav_msgs::msgs::CommandMotorSpeed>("~/" + model_->GetName() + motor_velocity_reference_pub_topic_, 1);
 
   _rotor_count = 5;
-  last_time_ = world_->GetSimTime();
-  last_gps_time_ = world_->GetSimTime();
-  gps_update_interval_ = 0.2;  // in seconds for 5Hz
-
-  gravity_W_ = world_->GetPhysicsEngine()->GetGravity();
 
   // Magnetic field data for Zurich from WMM2015 (10^5xnanoTesla (N, E, D))
   //mag_W_ = {0.21523, 0.00771, 0.42741};
@@ -462,9 +479,35 @@ void GazeboMavlinkInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
   fds[0].events = POLLIN;
 }
 
-// This gets called by the world update start event.
-void GazeboMavlinkInterface::OnUpdate(const common::UpdateInfo& /*_info*/) {
+void GazeboMavlinkInterface::GPSCallback(const boost::shared_ptr<const gazebo::msgs::GPS> &msg)
+{
+  // Raw UDP mavlink
+  mavlink_hil_gps_t hil_gps_msg;
+  math::Vector3 velocity(msg->velocity_east(), msg->velocity_north(), 0);
 
+  this->lat_rad = msg->latitude_deg() * M_PI / 180.0;
+  this->lon_rad = msg->latitude_deg() * M_PI / 180.0;
+
+  hil_gps_msg.time_usec = msg->time().nsec() * 1000;
+  hil_gps_msg.fix_type = 3;
+  hil_gps_msg.lat = msg->latitude_deg() * 1e7;
+  hil_gps_msg.lon = msg->longitude_deg() * 1e7;
+  hil_gps_msg.alt = msg->altitude() * 1000;
+  hil_gps_msg.eph = 100;
+  hil_gps_msg.epv = 100;
+  hil_gps_msg.vel = velocity.GetLength() * 100;
+  hil_gps_msg.vn = -msg->velocity_east() * 100;
+  hil_gps_msg.ve = msg->velocity_north() * 100;
+  hil_gps_msg.vd = -msg->velocity_up() * 100;
+  hil_gps_msg.cog = atan2(hil_gps_msg.ve, hil_gps_msg.vn) * 180.0/3.1416 * 100.0;
+  hil_gps_msg.satellites_visible = 10;
+
+  send_mavlink_message(MAVLINK_MSG_ID_HIL_GPS, &hil_gps_msg, 200);
+}
+
+// This gets called by the world update start event.
+void GazeboMavlinkInterface::OnUpdate(const common::UpdateInfo& /*_info*/)
+{
   common::Time current_time = world_->GetSimTime();
   double dt = (current_time - last_time_).Double();
 
@@ -472,8 +515,7 @@ void GazeboMavlinkInterface::OnUpdate(const common::UpdateInfo& /*_info*/) {
 
   handle_control(dt);
 
-  if(received_first_referenc_) {
-
+  if (received_first_referenc_) {
     mav_msgs::msgs::CommandMotorSpeed turning_velocities_msg;
 
     for (int i = 0; i < input_reference_.size(); i++){
@@ -483,6 +525,7 @@ void GazeboMavlinkInterface::OnUpdate(const common::UpdateInfo& /*_info*/) {
         turning_velocities_msg.add_motor_speed(input_reference_[i]);
       }
     }
+
     // TODO Add timestamp and Header
     // turning_velocities_msg->header.stamp.sec = current_time.sec;
     // turning_velocities_msg->header.stamp.nsec = current_time.nsec;
@@ -610,8 +653,8 @@ void GazeboMavlinkInterface::send_mavlink_message(const uint8_t msgid, const voi
   }
 }
 
-void GazeboMavlinkInterface::ImuCallback(ImuPtr& imu_message) {
-
+void GazeboMavlinkInterface::ImuCallback(ImuPtr& imu_message)
+{
   math::Pose T_W_I = model_->GetWorldPose();
   math::Vector3 pos_W_I = T_W_I.pos;  // Use the models'world position for GPS and pressure alt.
   
@@ -677,7 +720,6 @@ void GazeboMavlinkInterface::LidarCallback(LidarPtr& lidar_message) {
   optflow_distance = lidar_message->current_distance(); //[m]
 
   send_mavlink_message(MAVLINK_MSG_ID_DISTANCE_SENSOR, &sensor_msg, 200);
-
 }
 
 void GazeboMavlinkInterface::OpticalFlowCallback(OpticalFlowPtr& opticalFlow_message) {
@@ -695,7 +737,9 @@ void GazeboMavlinkInterface::OpticalFlowCallback(OpticalFlowPtr& opticalFlow_mes
   sensor_msg.time_delta_distance_us = opticalFlow_message->time_delta_distance_us();
   sensor_msg.distance = optflow_distance;
 
-  send_mavlink_message(MAVLINK_MSG_ID_HIL_OPTICAL_FLOW, &sensor_msg, 200);
+  // MAVLINK_MSG_ID_OPTICAL_FLOW_RAD or MAVLINK_MSG_ID_HIL_OPTICAL_FLOW ?
+  // send_mavlink_message(MAVLINK_MSG_ID_HIL_OPTICAL_FLOW, &sensor_msg, 200);
+  send_mavlink_message(MAVLINK_MSG_ID_OPTICAL_FLOW_RAD, &sensor_msg, 200);
 }
 
 /*ssize_t GazeboMavlinkInterface::receive(void *_buf, const size_t _size, uint32_t _timeoutMs)
@@ -748,6 +792,10 @@ void GazeboMavlinkInterface::handle_message(mavlink_message_t *msg)
 {
   switch(msg->msgid) {
   case MAVLINK_MSG_ID_HIL_CONTROLS:
+    struct {
+      float control[8];
+    } inputs;
+
     mavlink_hil_controls_t controls;
     mavlink_msg_hil_controls_decode(msg, &controls);
     bool armed = false;

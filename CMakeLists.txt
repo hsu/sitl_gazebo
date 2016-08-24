@@ -85,6 +85,7 @@ find_package(Boost 1.40 COMPONENTS system thread timer REQUIRED )
 ## Build ##
 ###########
 
+<<<<<<< HEAD
 list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
 
 add_definitions(
@@ -92,6 +93,9 @@ add_definitions(
   # Shut up warnings about std::binder1st, std::binder2nd.
   -Wno-deprecated-declarations
 )
+=======
+add_definitions(-std=c++11)
+>>>>>>> 7224a412c45a4cc2979796ec782544896db5a42e
 
 set(GAZEBO_MSG_INCLUDE_DIRS)
 foreach(ITR ${GAZEBO_INCLUDE_DIRS})
@@ -106,6 +110,7 @@ include_directories(
   ${GAZEBO_MSG_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+<<<<<<< HEAD
   ${CMAKE_CURRENT_BINARY_DIR}
   ${Boost_INCLUDE_DIR}
   # Workaround for Eigen3
@@ -114,6 +119,9 @@ include_directories(
   # Workaround for OGRE include dirs on Mac OS
   /usr/local/include/OGRE
   /usr/local/include/OGRE/Paging
+=======
+  ${CMAKE_CURRENT_BINARY_DIR}/msgs
+>>>>>>> 7224a412c45a4cc2979796ec782544896db5a42e
   )
 
 link_libraries(
@@ -153,6 +161,7 @@ add_custom_target(sdf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/iris/iris.s
 # Message Generation #
 #--------------------#
 
+<<<<<<< HEAD
 set (msgs
   msgs/Float.proto
   msgs/SensorImu.proto
@@ -176,12 +185,26 @@ link_libraries(mav_msgs)
 add_library(rotors_gazebo_gimbal_controller_plugin SHARED src/gazebo_gimbal_controller_plugin.cpp)
 target_link_libraries(rotors_gazebo_gimbal_controller_plugin ${Boost_LIBRARIES} ${GAZEBO_LIBRARIES} ${Boost_SYSTEM_LIBRARY_RELEASE} ${Boost_THREAD_LIBRARY_RELEASE})
 # add_dependencies(rotors_gazebo_gimbal_controller_plugin)
+=======
+add_library(rotors_gazebo_controller_interface SHARED src/gazebo_controller_interface.cpp)
+target_link_libraries(rotors_gazebo_controller_interface ${GAZEBO_LIBRARIES} ${PROTOBUF_LIBRARY} mav_msgs)
+add_dependencies(rotors_gazebo_controller_interface mav_msgs)
+
+add_library(rotors_gazebo_motor_model SHARED src/gazebo_motor_model.cpp)
+target_link_libraries(rotors_gazebo_motor_model mav_msgs ${GAZEBO_LIBRARIES})
+add_dependencies(rotors_gazebo_motor_model mav_msgs)
+
+add_library(rotors_gazebo_imu_plugin SHARED src/gazebo_imu_plugin.cpp)
+target_link_libraries(rotors_gazebo_imu_plugin mav_msgs ${GAZEBO_LIBRARIES})
+add_dependencies(rotors_gazebo_imu_plugin mav_msgs)
+>>>>>>> 7224a412c45a4cc2979796ec782544896db5a42e
 
 add_library(rotors_gazebo_controller_interface SHARED src/gazebo_controller_interface.cpp)
 add_library(rotors_gazebo_motor_model SHARED src/gazebo_motor_model.cpp)
 add_library(rotors_gazebo_multirotor_base_plugin SHARED src/gazebo_multirotor_base_plugin.cpp)
 add_library(rotors_gazebo_imu_plugin SHARED src/gazebo_imu_plugin.cpp)
 add_library(gazebo_opticalFlow_plugin SHARED src/gazebo_opticalFlow_plugin.cpp)
+<<<<<<< HEAD
 add_library(gazebo_lidar_plugin SHARED src/gazebo_lidar_plugin.cpp)
 add_library(rotors_gazebo_mavlink_interface SHARED src/gazebo_mavlink_interface.cpp src/geo_mag_declination.cpp)
 
@@ -257,3 +280,15 @@ set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${GAZEBO_MAJOR_VERSION}-${PR
 include(CPack)
 # vim: set et fenc= ff=unix sts=0 sw=2 ts=2 :
 
+=======
+target_link_libraries(gazebo_opticalFlow_plugin mav_msgs ${GAZEBO_LIBRARIES} ${OpenCV_LIBS})
+add_dependencies(gazebo_opticalFlow_plugin mav_msgs)
+
+add_library(gazebo_lidar_plugin SHARED src/gazebo_lidar_plugin.cpp)
+target_link_libraries(gazebo_lidar_plugin mav_msgs ${GAZEBO_LIBRARIES})
+add_dependencies(gazebo_lidar_plugin mav_msgs)
+
+add_library(rotors_gazebo_mavlink_interface SHARED src/gazebo_mavlink_interface.cpp src/geo_mag_declination.cpp)
+target_link_libraries(rotors_gazebo_mavlink_interface mav_msgs ${GAZEBO_LIBRARIES})
+add_dependencies(rotors_gazebo_mavlink_interface mav_msgs)
+>>>>>>> 7224a412c45a4cc2979796ec782544896db5a42e

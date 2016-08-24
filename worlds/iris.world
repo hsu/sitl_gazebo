@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.5">
   <world name="default">
-
     <spherical_coordinates>
       <surface_model>EARTH_WGS84</surface_model>
       <latitude_deg>47.397742</latitude_deg>
@@ -9,7 +8,6 @@
       <elevation>488.0</elevation>
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
-
     <!-- A global light source -->
     <include>
       <uri>model://sun</uri>
