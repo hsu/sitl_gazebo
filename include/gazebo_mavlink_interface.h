@@ -69,8 +69,8 @@ static const std::string kDefaultNamespace = "";
 static const std::string kDefaultMotorVelocityReferencePubTopic = "/gazebo/command/motor_speed";
 
 static const std::string kDefaultImuTopic = "/imu";
-static const std::string kDefaultLidarTopic = "/lidar";
-static const std::string kDefaultOpticalFlowTopic = "/opticalFlow";
+static const std::string kDefaultLidarTopic = "/lidar/link/lidar";
+static const std::string kDefaultOpticalFlowTopic = "/camera/link/opticalFlow";
 
 class GazeboMavlinkInterface : public ModelPlugin {
  public:
@@ -137,6 +137,10 @@ class GazeboMavlinkInterface : public ModelPlugin {
   common::PID elevator_pid_;
   common::PID left_elevon_pid_;
   common::PID right_elevon_pid_;
+  bool use_propeller_pid_;
+  bool use_elevator_pid_;
+  bool use_left_elevon_pid_;
+  bool use_right_elevon_pid_;
 
   std::vector<physics::JointPtr> joints_;
   std::vector<common::PID> pids_;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 Open Source Robotics Foundation
+ * Copyright (C) 2012-2016 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  *
 */
-/* Desc: A 4-wheeled vehicle
- * Author: Nate Koenig
+/* Desc: A basic gimbal controller
+ * Author: John Hsu
  */
 
 #ifndef _GAZEBO_GIMBAL_CONTROLLER_PLUGIN_HH_
@@ -44,9 +44,16 @@ namespace gazebo
 
     private: void OnUpdate();
 
+#if GAZEBO_MAJOR_VERSION >= 7 && GAZEBO_MINOR_VERSION >= 4
+    /// only gazebo 7.4 and above support Any
     private: void OnPitchStringMsg(ConstAnyPtr &_msg);
     private: void OnRollStringMsg(ConstAnyPtr &_msg);
     private: void OnYawStringMsg(ConstAnyPtr &_msg);
+#else
+    private: void OnPitchStringMsg(ConstGzStringPtr &_msg);
+    private: void OnRollStringMsg(ConstGzStringPtr &_msg);
+    private: void OnYawStringMsg(ConstGzStringPtr &_msg);
+#endif
 
     /// \TODO something to move into Angle class
     /// \brief returns _angle1 normalized about

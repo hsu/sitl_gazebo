@@ -111,22 +111,18 @@ void GimbalControllerPlugin::Load(physics::ModelPtr _model,
 
   // get imu sensor
   std::string imuSensorName = "camera_imu";
-  this->imuSensor = std::static_pointer_cast<sensors::ImuSensor>(
-    sensors::SensorManager::Instance()->GetSensor(imuSensorName));
   if (this->sdf->HasElement("imu"))
   {
     // Add names to map
     imuSensorName = sdf->Get<std::string>("imu");
-    if (this->model->GetJoint(imuSensorName))
-    {
-      this->imuSensor = std::static_pointer_cast<sensors::ImuSensor>(
-        sensors::SensorManager::Instance()->GetSensor(imuSensorName));
-    }
-    else
-    {
-      gzwarn << "imu [" << imuSensorName << "] does not exist?\n";
-    }
   }
+#if GAZEBO_MAJOR_VERSION >= 7
+  this->imuSensor = std::static_pointer_cast<sensors::ImuSensor>(
+    sensors::SensorManager::Instance()->GetSensor(imuSensorName));
+#elif GAZEBO_MAJOR_VERSION >= 6
+  this->imuSensor = boost::static_pointer_cast<sensors::ImuSensor>(
+    sensors::SensorManager::Instance()->GetSensor(imuSensorName));
+#endif
   if (!this->imuSensor)
   {
     gzerr << "GimbalControllerPlugin::Load ERROR! Can't get imu sensor '"
@@ -165,41 +161,80 @@ void GimbalControllerPlugin::Init()
   // publish pitch status via gz transport
   pitchTopic = std::string("~/") +  this->model->GetName()
     + "/gimbal_pitch_status";
+#if GAZEBO_MAJOR_VERSION >= 7 && GAZEBO_MINOR_VERSION >= 4
+  /// only gazebo 7.4 and above support Any
+  this->pitchPub = node->Advertise<gazebo::msgs::Any>(pitchTopic);
+#else
   this->pitchPub = node->Advertise<gazebo::msgs::GzString>(pitchTopic);
+#endif
 
   // publish roll status via gz transport
   rollTopic = std::string("~/") +  this->model->GetName()
     + "/gimbal_roll_status";
+#if GAZEBO_MAJOR_VERSION >= 7 && GAZEBO_MINOR_VERSION >= 4
+  /// only gazebo 7.4 and above support Any
+  this->rollPub = node->Advertise<gazebo::msgs::Any>(rollTopic);
+#else
   this->rollPub = node->Advertise<gazebo::msgs::GzString>(rollTopic);
+#endif
 
   // publish yaw status via gz transport
   yawTopic = std::string("~/") +  this->model->GetName()
     + "/gimbal_yaw_status";
+#if GAZEBO_MAJOR_VERSION >= 7 && GAZEBO_MINOR_VERSION >= 4
+  /// only gazebo 7.4 and above support Any
+  this->yawPub = node->Advertise<gazebo::msgs::Any>(yawTopic);
+#else
   this->yawPub = node->Advertise<gazebo::msgs::GzString>(yawTopic);
+#endif
 
   gzmsg << "GimbalControllerPlugin::Init" << std::endl;
 }
 
+#if GAZEBO_MAJOR_VERSION >= 7 && GAZEBO_MINOR_VERSION >= 4
+/// only gazebo 7.4 and above support Any
 /////////////////////////////////////////////////
-void GimbalControllerPlugin::OnPitchStringMsg(ConstAnyPtr &_msg)
+void GimbalControllerPlugin::OnPitchStringMsg(ConstGzStringPtr &_msg)
 {
   gzmsg << "pitch command received " << _msg->double_value() << std::endl;
   this->pitchCommand = _msg->double_value();
 }
 
 /////////////////////////////////////////////////
-void GimbalControllerPlugin::OnRollStringMsg(ConstAnyPtr &_msg)
+void GimbalControllerPlugin::OnRollStringMsg(ConstGzStringPtr &_msg)
 {
   gzmsg << "roll command received " << _msg->double_value() << std::endl;
   this->rollCommand = _msg->double_value();
 }
 
 /////////////////////////////////////////////////
-void GimbalControllerPlugin::OnYawStringMsg(ConstAnyPtr &_msg)
+void GimbalControllerPlugin::OnYawStringMsg(ConstGzStringPtr &_msg)
 {
   gzmsg << "yaw command received " << _msg->double_value() << std::endl;
   this->yawCommand = _msg->double_value();
 }
+#else
+/////////////////////////////////////////////////
+void GimbalControllerPlugin::OnPitchStringMsg(ConstGzStringPtr &_msg)
+{
+  gzmsg << "pitch command received " << _msg->data() << std::endl;
+  this->pitchCommand = atof(_msg->data().c_str());
+}
+
+/////////////////////////////////////////////////
+void GimbalControllerPlugin::OnRollStringMsg(ConstGzStringPtr &_msg)
+{
+  gzmsg << "roll command received " << _msg->data() << std::endl;
+  this->rollCommand = atof(_msg->data().c_str());
+}
+
+/////////////////////////////////////////////////
+void GimbalControllerPlugin::OnYawStringMsg(ConstGzStringPtr &_msg)
+{
+  gzmsg << "yaw command received " << _msg->data() << std::endl;
+  this->yawCommand = atof(_msg->data().c_str());
+}
+#endif
 
 /////////////////////////////////////////////////
 void GimbalControllerPlugin::OnUpdate()

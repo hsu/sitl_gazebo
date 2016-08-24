@@ -1,5 +1,5 @@
 <sdf version='1.6' xmlns:xacro='http://ros.org/wiki/xacro'>
-  <xacro:arg name='visual_material' default='Gazebo/DarkGrey' />
+  <xacro:arg name='visual_material' default='DarkGrey' />
   <xacro:arg name='mavlink_addr' default='INADDR_ANY' />
   <xacro:arg name='mavlink_udp_port' default='14560' />
   <model name="delta_wing">
@@ -59,6 +59,25 @@
           </friction>
         </surface>
       </collision>
+      <visual name="team_color">
+        <pose>0 0 0.2 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://zephyr_delta_wing/meshes/wing.dae</uri>
+            <submesh>
+              <name>Wing</name>
+              <center>true</center>
+            </submesh>
+            <scale>1.02 1.02 1.02</scale>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/$(arg visual_material)</name>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+          </script>
+        </material>
+      </visual>
       <sensor name="camera" type="camera">
         <pose>0 6 0.0 0 0.0 -1.5707</pose>
         <camera>
