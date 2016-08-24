@@ -49,7 +49,6 @@ GazeboMavlinkInterface::~GazeboMavlinkInterface()
 
 void GazeboMavlinkInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-  std::string gps_sub_topic;
   // Store the pointer to the model.
   model_ = _model;
 
@@ -67,7 +66,6 @@ void GazeboMavlinkInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
 
   getSdfParam<std::string>(_sdf, "motorSpeedCommandPubTopic", motor_velocity_reference_pub_topic_,
                            motor_velocity_reference_pub_topic_);
-<<<<<<< HEAD
   getSdfParam<std::string>(_sdf, "imuSubTopic", imu_sub_topic_, imu_sub_topic_);
   getSdfParam<std::string>(_sdf, "lidarSubTopic", lidar_sub_topic_, lidar_sub_topic_);
   getSdfParam<std::string>(_sdf, "opticalFlowSubTopic",
@@ -368,7 +366,7 @@ void GazeboMavlinkInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
     }
   }
 
-  getSdfParam<std::string>(_sdf, "gpsPubTopic", gps_sub_topic, gps_sub_topic);
+  getSdfParam<std::string>(_sdf, "gpsPubTopic", gps_sub_topic_, gps_sub_topic_);
 
   if (_sdf->HasElement("cgo3_mount_joint")) {
     std::string gimbal_yaw_joint_name = _sdf->GetElement("cgo3_mount_joint")->Get<std::string>();
@@ -407,9 +405,9 @@ void GazeboMavlinkInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
 
   // Subscriber to IMU sensor_msgs::Imu Message and SITL's HilControl message
   imu_sub_ = node_handle_->Subscribe("~/" + model_->GetName() + imu_sub_topic_, &GazeboMavlinkInterface::ImuCallback, this);
+  gps_sub_ = node_handle_->Subscribe("~/" + model_->GetName() + gps_sub_topic_, &GazeboMavlinkInterface::GPSCallback, this);
   lidar_sub_ = node_handle_->Subscribe("~/" + model_->GetName() + lidar_sub_topic_, &GazeboMavlinkInterface::LidarCallback, this);
   opticalFlow_sub_ = node_handle_->Subscribe("~/" + model_->GetName() + opticalFlow_sub_topic_, &GazeboMavlinkInterface::OpticalFlowCallback, this);
-  gps_sub_ = node_handle_->Subscribe("~/" + model_->GetName() + gps_sub_topic, &GazeboMavlinkInterface::GPSCallback, this);
   
   // Publish HilSensor Message and gazebo's motor_speed message
   motor_velocity_reference_pub_ = node_handle_->Advertise<mav_msgs::msgs::CommandMotorSpeed>("~/" + model_->GetName() + motor_velocity_reference_pub_topic_, 1);
@@ -433,7 +431,7 @@ void GazeboMavlinkInterface::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
     gps_name = _sdf->Get<std::string>("gpsSensorName");
   sensors::SensorManager *mgr = sensors::SensorManager::Instance();
   mgr->Update();
-  gps_sensor = std::dynamic_pointer_cast<sensors::GpsSensor>(
+  gps_sensor_ = std::dynamic_pointer_cast<sensors::GpsSensor>(
         mgr->GetSensor(gps_name));
 
   //Create socket
@@ -485,8 +483,8 @@ void GazeboMavlinkInterface::GPSCallback(const boost::shared_ptr<const gazebo::m
   mavlink_hil_gps_t hil_gps_msg;
   math::Vector3 velocity(msg->velocity_east(), msg->velocity_north(), 0);
 
-  this->lat_rad = msg->latitude_deg() * M_PI / 180.0;
-  this->lon_rad = msg->latitude_deg() * M_PI / 180.0;
+  lat_rad_ = msg->latitude_deg() * M_PI / 180.0;
+  lon_rad_ = msg->latitude_deg() * M_PI / 180.0;
 
   hil_gps_msg.time_usec = msg->time().nsec() * 1000;
   hil_gps_msg.fix_type = 3;
@@ -566,13 +564,13 @@ void GazeboMavlinkInterface::OnUpdate(const common::UpdateInfo& /*_info*/)
   double sin_c = sin(c);
   double cos_c = cos(c);
   if (c != 0.0) {
-    lat_rad = asin(cos_c * sin(lat_zurich) + (x_rad * sin_c * cos(lat_zurich)) / c);
-    lon_rad = (lon_zurich + atan2(y_rad * sin_c, c * cos(lat_zurich) * cos_c - x_rad * sin(lat_zurich) * sin_c));
+    lat_rad_ = asin(cos_c * sin(lat_zurich) + (x_rad * sin_c * cos(lat_zurich)) / c);
+    lon_rad_ = (lon_zurich + atan2(y_rad * sin_c, c * cos(lat_zurich) * cos_c - x_rad * sin(lat_zurich) * sin_c));
   } else {
-   lat_rad = lat_zurich;
-    lon_rad = lon_zurich;
+    lat_rad_ = lat_zurich;
+    lon_rad_ = lon_zurich;
   }
-  alt_m = (pos_W_I.z + alt_zurich);
+  alt_m_ = (pos_W_I.z + alt_zurich);
 #else
 
   // This is still broken becuase Gazebo defaults to ENU, and 
@@ -583,9 +581,9 @@ void GazeboMavlinkInterface::OnUpdate(const common::UpdateInfo& /*_info*/)
   // https://bitbucket.org/osrf/gazebo/branches/compare/issue_1959_gazebo7%0Dgazebo7#chg-gazebo/common/SphericalCoordinates.cc
 
   // if this world has a spherical coordinate
-  lat_rad = gps_sensor->Latitude().Radian();
-  lon_rad = gps_sensor->Longitude().Radian();
-  alt_m = gps_sensor->Altitude();
+  lat_rad_ = gps_sensor->Latitude().Radian();
+  lon_rad_ = gps_sensor->Longitude().Radian();
+  alt_m_ = gps_sensor->Altitude();
   // Use the models' world position for GPS velocity.
   math::Vector3 velocity_current_W = model_->GetWorldLinearVel();
   math::Vector3 velocity_current_W_xy = velocity_current_W;
@@ -598,9 +596,9 @@ void GazeboMavlinkInterface::OnUpdate(const common::UpdateInfo& /*_info*/)
     mavlink_hil_gps_t hil_gps_msg;
     hil_gps_msg.time_usec = current_time.nsec*1000;
     hil_gps_msg.fix_type = 3;
-    hil_gps_msg.lat = lat_rad * 180 / M_PI * 1e7;
-    hil_gps_msg.lon = lon_rad * 180 / M_PI * 1e7;
-    hil_gps_msg.alt = alt_m * 1000;
+    hil_gps_msg.lat = lat_rad_ * 180 / M_PI * 1e7;
+    hil_gps_msg.lon = lon_rad_ * 180 / M_PI * 1e7;
+    hil_gps_msg.alt = alt_m_ * 1000;
     hil_gps_msg.eph = 100;
     hil_gps_msg.epv = 100;
     hil_gps_msg.vel = velocity_current_W_xy.GetLength() * 100;
@@ -665,7 +663,7 @@ void GazeboMavlinkInterface::ImuCallback(ImuPtr& imu_message)
   C_W_I.z = imu_message->orientation().z();
 
   // gzerr << "got imu: " << C_W_I << "\n";
-  float declination = get_mag_declination(lat_rad, lon_rad);
+  float declination = get_mag_declination(lat_rad_, lon_rad_);
 
   math::Quaternion C_D_I(0.0, 0.0, declination);
 

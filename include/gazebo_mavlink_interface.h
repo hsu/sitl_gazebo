@@ -66,7 +66,6 @@ static const std::string kDefaultNamespace = "";
 
 // This just proxies the motor commands from command/motor_speed to the single motors via internal
 // ConsPtr passing, such that the original commands don't have to go n_motors-times over the wire.
-<<<<<<< HEAD
 static const std::string kDefaultMotorVelocityReferencePubTopic = "/gazebo/command/motor_speed";
 
 static const std::string kDefaultImuTopic = "/imu";
@@ -82,6 +81,7 @@ class GazeboMavlinkInterface : public ModelPlugin {
         namespace_(kDefaultNamespace),
         motor_velocity_reference_pub_topic_(kDefaultMotorVelocityReferencePubTopic),
         imu_sub_topic_(kDefaultImuTopic),
+        gps_sub_topic_(kDefaultGpsTopic),
         opticalFlow_sub_topic_(kDefaultOpticalFlowTopic),
         lidar_sub_topic_(kDefaultLidarTopic),
         model_{},
@@ -99,23 +99,11 @@ class GazeboMavlinkInterface : public ModelPlugin {
         zero_position_disarmed_{},
         zero_position_armed_{},
         input_index_{},
-        lat_rad(0.0),
-        lon_rad(0.0),
+        lat_rad_(0.0),
+        lon_rad_(0.0),
+        alt_m_(0.0),
         mavlink_udp_port_(kDefaultMavlinkUdpPort)
         {}
-=======
-static const std::string kDefaultMotorVelocityReferencePubTopic = "gazebo/command/motor_speed";
-
-static const std::string kDefaultImuTopic = "imu";
-static const std::string kDefaultLidarTopic = "lidar";
-static const std::string kDefaultOpticalFlowTopic = "opticalFlow";
-
-static bool use_mavlink_udp = true;
-
-class GazeboMavlinkInterface : public ModelPlugin {
- public:
-  GazeboMavlinkInterface();
->>>>>>> 7224a412c45a4cc2979796ec782544896db5a42e
   ~GazeboMavlinkInterface();
 
   void Publish();
@@ -160,10 +148,6 @@ class GazeboMavlinkInterface : public ModelPlugin {
   event::ConnectionPtr updateConnection_;
 
   boost::thread callback_queue_thread_;
-<<<<<<< HEAD
-  void QueueThread();
-=======
->>>>>>> 7224a412c45a4cc2979796ec782544896db5a42e
   void ImuCallback(ImuPtr& imu_msg);
   void LidarCallback(LidarPtr& lidar_msg);
   void OpticalFlowCallback(OpticalFlowPtr& opticalFlow_msg);
@@ -173,7 +157,6 @@ class GazeboMavlinkInterface : public ModelPlugin {
 
   static const unsigned n_out_max = 16;
 
-<<<<<<< HEAD
   unsigned _rotor_count;
   struct {
     float control[n_out_max];
@@ -188,34 +171,26 @@ class GazeboMavlinkInterface : public ModelPlugin {
   int input_index_[n_out_max];
   transport::PublisherPtr joint_control_pub_[n_out_max];
   common::SphericalCoordinatesPtr spherical_coord_;
-=======
   void GPSCallback(const boost::shared_ptr<const gazebo::msgs::GPS> &msg);
->>>>>>> 7224a412c45a4cc2979796ec782544896db5a42e
 
-  unsigned _rotor_count;
   transport::SubscriberPtr imu_sub_;
+  transport::SubscriberPtr gps_sub_;
   transport::SubscriberPtr lidar_sub_;
   transport::SubscriberPtr opticalFlow_sub_;
-<<<<<<< HEAD
-=======
-  transport::SubscriberPtr gps_sub_;
 
->>>>>>> 7224a412c45a4cc2979796ec782544896db5a42e
   std::string imu_sub_topic_;
+  std::string gps_sub_topic_;
   std::string lidar_sub_topic_;
   std::string opticalFlow_sub_topic_;
   
-<<<<<<< HEAD
   common::Time last_time_;
   common::Time last_gps_time_;
   common::Time last_actuator_time_;
   double gps_update_interval_;
-=======
->>>>>>> 7224a412c45a4cc2979796ec782544896db5a42e
-  double lat_rad;
-  double lon_rad;
-  double alt_m;
-  sensors::GpsSensorPtr gps_sensor;
+  double lat_rad_;
+  double lon_rad_;
+  double alt_m_;
+  sensors::GpsSensorPtr gps_sensor_;
 
   void handle_control(double _dt);
 
@@ -233,12 +208,6 @@ class GazeboMavlinkInterface : public ModelPlugin {
   socklen_t _addrlen;
   unsigned char _buf[65535];
   struct pollfd fds[1];
-
-<<<<<<< HEAD
-  struct sockaddr_in _srcaddr_2;  ///< MAVROS
-=======
-
->>>>>>> 7224a412c45a4cc2979796ec782544896db5a42e
 
   //so we dont have to do extra callbacks
   double optflow_xgyro;
