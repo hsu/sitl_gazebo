@@ -158,7 +158,7 @@ set (msgs
   msgs/SensorImu.proto
   msgs/opticalFlow.proto
   msgs/lidar.proto
-  msgs/SensorGps.proto
+  # msgs/SensorGps.proto
   msgs/CommandMotorSpeed.proto
   msgs/MotorSpeed.proto
 )
@@ -175,7 +175,8 @@ link_libraries(mav_msgs)
 
 add_library(rotors_gazebo_gimbal_controller_plugin SHARED src/gazebo_gimbal_controller_plugin.cpp)
 target_link_libraries(rotors_gazebo_gimbal_controller_plugin ${Boost_LIBRARIES} ${GAZEBO_LIBRARIES} ${Boost_SYSTEM_LIBRARY_RELEASE} ${Boost_THREAD_LIBRARY_RELEASE})
-# add_dependencies(rotors_gazebo_gimbal_controller_plugin)
+add_dependencies(rotors_gazebo_gimbal_controller_plugin mav_msgs)
+
 add_library(rotors_gazebo_controller_interface SHARED src/gazebo_controller_interface.cpp)
 target_link_libraries(rotors_gazebo_controller_interface ${GAZEBO_LIBRARIES} ${PROTOBUF_LIBRARY} mav_msgs)
 add_dependencies(rotors_gazebo_controller_interface mav_msgs)
@@ -201,9 +202,9 @@ target_link_libraries(rotors_gazebo_mavlink_interface mav_msgs ${GAZEBO_LIBRARIE
 add_dependencies(rotors_gazebo_mavlink_interface mav_msgs)
 
 set(plugins
+  rotors_gazebo_gimbal_controller_plugin
   rotors_gazebo_controller_interface
   rotors_gazebo_motor_model
-  rotors_gazebo_multirotor_base_plugin
   rotors_gazebo_imu_plugin
   gazebo_opticalFlow_plugin
   gazebo_lidar_plugin

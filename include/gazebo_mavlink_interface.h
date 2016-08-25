@@ -18,6 +18,9 @@
  * limitations under the License.
  */
 
+#ifndef _GAZEBO_MAVLINK_INTERFACE_HH_
+#define _GAZEBO_MAVLINK_INTERFACE_HH_
+
 #include <boost/bind.hpp>
 #include <Eigen/Eigen>
 #include <gazebo/common/common.hh>
@@ -69,6 +72,7 @@ static const std::string kDefaultNamespace = "";
 static const std::string kDefaultMotorVelocityReferencePubTopic = "/gazebo/command/motor_speed";
 
 static const std::string kDefaultImuTopic = "/imu";
+static const std::string kDefaultGpsTopic = "/gps";
 static const std::string kDefaultLidarTopic = "/lidar/link/lidar";
 static const std::string kDefaultOpticalFlowTopic = "/camera/link/opticalFlow";
 
@@ -220,3 +224,4 @@ class GazeboMavlinkInterface : public ModelPlugin {
 
   };
 }
+#endif

@@ -27,21 +27,6 @@ namespace gazebo {
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboMavlinkInterface);
 
-GazeboMavlinkInterface::GazeboMavlinkInterface()
-    : ModelPlugin()
-    , received_first_referenc_(false)
-    , namespace_(kDefaultNamespace)
-    , motor_velocity_reference_pub_topic_(kDefaultMotorVelocityReferencePubTopic)
-    , imu_sub_topic_(kDefaultImuTopic)
-    , opticalFlow_sub_topic_(kDefaultOpticalFlowTopic)
-    , lidar_sub_topic_(kDefaultLidarTopic)
-    , left_elevon_joint_(nullptr)
-    , right_elevon_joint_(nullptr)
-    , elevator_joint_(nullptr)
-    , propeller_joint_(nullptr)
-{
-}
-
 GazeboMavlinkInterface::~GazeboMavlinkInterface()
 {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
@@ -581,9 +566,9 @@ void GazeboMavlinkInterface::OnUpdate(const common::UpdateInfo& /*_info*/)
   // https://bitbucket.org/osrf/gazebo/branches/compare/issue_1959_gazebo7%0Dgazebo7#chg-gazebo/common/SphericalCoordinates.cc
 
   // if this world has a spherical coordinate
-  lat_rad_ = gps_sensor->Latitude().Radian();
-  lon_rad_ = gps_sensor->Longitude().Radian();
-  alt_m_ = gps_sensor->Altitude();
+  lat_rad_ = gps_sensor_->Latitude().Radian();
+  lon_rad_ = gps_sensor_->Longitude().Radian();
+  alt_m_ = gps_sensor_->Altitude();
   // Use the models' world position for GPS velocity.
   math::Vector3 velocity_current_W = model_->GetWorldLinearVel();
   math::Vector3 velocity_current_W_xy = velocity_current_W;
