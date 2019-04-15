@@ -1498,7 +1498,7 @@
           <joint_name>rotor_1_joint</joint_name>
         </channel>
         <channel name="gimbal_roll">
-          <input_index>6</input_index>
+          <input_index>8</input_index>
           <input_offset>0</input_offset>
           <input_scaling>-3.1415</input_scaling>
           <zero_position_disarmed>0</zero_position_disarmed>
@@ -1518,7 +1518,7 @@
           <joint_name>cgo3_horizontal_arm_joint</joint_name>
         </channel>
         <channel name="gimbal_yaw">
-          <input_index>8</input_index>
+          <input_index>6</input_index>
           <input_offset>0</input_offset>
           <input_scaling>-3.1415</input_scaling>
           <zero_position_disarmed>0</zero_position_disarmed>
@@ -1580,9 +1580,9 @@
       <accelerometerTurnOnBiasSigma>0.196</accelerometerTurnOnBiasSigma>
     </plugin>
     <plugin name='gimbal_controller' filename='libgazebo_gimbal_controller_plugin.so'>
-      <joint_yaw>typhoon_h480::cgo3_vertical_arm_joint</joint_yaw>
-      <joint_roll>typhoon_h480::cgo3_horizontal_arm_joint</joint_roll>
-      <joint_pitch>typhoon_h480::cgo3_camera_joint</joint_pitch>
+      <joint_yaw>cgo3_vertical_arm_jointDNE</joint_yaw>
+      <joint_roll>cgo3_horizontal_arm_jointDNE</joint_roll>
+      <joint_pitch>cgo3_camera_jointDNE</joint_pitch>
       <control_gimbal_channels>
         <channel>
           <joint_control_pid>
