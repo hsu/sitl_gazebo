@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <sdf version="1.5" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:arg name='camera_control_udp_port' default='14530' />
   <xacro:arg name='camera_udp_port' default='5600' />
   <xacro:arg name='camera_pose' default='-0.051 0 -0.162 0 0 3.14159'/>
   <model name="geotagged_cam">
@@ -46,6 +47,7 @@
           <interval>1</interval>
           <width>3840</width>
           <height>2160</height>
+          <camera_control_udp_port>$(arg camera_control_udp_port)</camera_control_udp_port>
         </plugin>
       </sensor>
     </link>

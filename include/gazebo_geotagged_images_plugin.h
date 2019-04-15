@@ -32,6 +32,9 @@
 #include <SITLGps.pb.h>
 #include <ignition/math.hh>
 
+static const uint32_t kDefaultGeotaggedImagesUdpPort = 14530;
+static const uint32_t kDefaultGeotaggedImagesQGCUdpPort = 14550;
+
 namespace gazebo
 {
 
@@ -78,6 +81,9 @@ private:
     int         _captureCount;
     double      _captureInterval;
     int         _fd;
+
+    int         _camera_control_udp_port;
+    int         _qgc_udp_port;
 
     enum {
         CAPTURE_DISABLED,
