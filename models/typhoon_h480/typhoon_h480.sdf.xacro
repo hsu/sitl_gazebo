@@ -4,6 +4,7 @@
   <xacro:arg name='qgc_udp_port' default='4560' />
   <xacro:arg name='enable_camera' default='true' />
   <xacro:arg name='camera_udp_port' default='5600' />
+  <xacro:arg name='camera_control_udp_port' default='14530' />
   <xacro:arg name='rotors_description_dir' default='.'/>
   <model name='typhoon_h480'>
     <!-- Typhoon H body -->
@@ -435,6 +436,7 @@
             <interval>1</interval>
             <width>3840</width>
             <height>2160</height>
+            <camera_control_udp_port>$(arg camera_control_udp_port)</camera_control_udp_port>
         </plugin>
       </sensor>
     </link>
