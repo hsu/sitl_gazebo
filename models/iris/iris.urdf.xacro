@@ -407,10 +407,16 @@
     </plugin>
     <static>0</static>
     <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
-        <robotNamespace></robotNamespace>
-        <jointName>iris_0::rotor_0_joint, iris_0::rotor_1_joint, iris_0::rotor_2_joint, iris_0::rotor_3_joint</jointName>
-        <updateRate>100</updateRate>
-        <alwaysOn>true</alwaysOn>
+      <ros>
+        <namespace>/demo</namespace>
+        <argument>joint_states:=joint_states</argument>
+      </ros>
+      <joint_name>iris_0::imu_link</joint_name>
+      <joint_name>iris_0::rotor_0_joint</joint_name>
+      <joint_name>iris_0::rotor_1_joint</joint_name>
+      <joint_name>iris_0::rotor_2_joint</joint_name>
+      <joint_name>iris_0::rotor_3_joint</joint_name>
+      <update_rate>100</update_rate>
     </plugin>
     <plugin name='rotors_gazebo_imu_plugin' filename='libgazebo_imu_plugin.so'>
       <robotNamespace/>
