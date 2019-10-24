@@ -14,6 +14,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+option(BUILD_GSTREAMER_PLUGIN "enable gstreamer plugin" ON)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 option(BUILD_GSTREAMER_PLUGIN "enable gstreamer plugin" ON)
@@ -22,6 +24,7 @@ option(SEND_ODOMETRY_DATA "Send Mavlink ODOMETRY msgs" OFF)
 find_package(ament_cmake REQUIRED)
 find_package(Boost 1.58 REQUIRED COMPONENTS system thread filesystem)
 find_package(gazebo REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(TinyXML REQUIRED)
 if (BUILD_GSTREAMER_PLUGIN)
   set(GStreamer_FIND_VERSION "1.0")
@@ -54,6 +57,16 @@ else()
 endif()
 
 link_directories(${GAZEBO_LIBRARY_DIRS})
+
+if (BUILD_GSTREAMER_PLUGIN)
+  pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
+  if (GSTREAMER_FOUND)
+    if("${GAZEBO_VERSION}" VERSION_LESS "8.0")
+      find_package (Qt4)
+      include (${QT_USE_FILE})
+    endif()
+  endif()
+endif()
 
 set(PROTOBUF_IMPORT_DIRS "")
 foreach(ITR ${GAZEBO_INCLUDE_DIRS})
@@ -188,6 +201,22 @@ add_custom_target(sdf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/iris/iris.s
 #-----------#
 # Functions #
 #-----------#
+
+link_libraries(
+  ${OpenCV_LIBRARIES}
+)
+
+if (GSTREAMER_FOUND)
+  include_directories(
+    ${GSTREAMER_INCLUDE_DIRS}
+  )
+endif()
+
+if (GSTREAMER_FOUND)
+  link_libraries(
+    ${GSTREAMER_LIBRARIES}
+  )
+endif()
 
 function(glob_generate target file_glob)
   file(GLOB_RECURSE glob_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${file_glob})
