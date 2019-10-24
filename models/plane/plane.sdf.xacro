@@ -7,9 +7,10 @@
   <xacro:arg name='camera_udp_port' default='5600' />
   <xacro:arg name='camera_control_udp_port' default='14530' />
   <xacro:arg name='rotors_description_dir' default='.'/>
+  <xacro:arg name='vehicle_name' default='iris'/>
   <model name='plane'>
     <pose>0 0 0.246 0 0 0</pose>
-    <link name='base_link'>
+    <link name='$(arg vehicle_name)_base_link'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
         <pose>0 0 0 0 0 0</pose>
@@ -23,7 +24,7 @@
           <izz>0.1477</izz>
         </inertia>
       </inertial>
-      <collision name='base_link_collision'>
+      <collision name='$(arg vehicle_name)_base_link_collision'>
         <pose>0 0 -0.07 0 0 0</pose>
         <geometry>
           <box>
@@ -42,7 +43,7 @@
           </friction>-->
         </surface>
       </collision>
-      <visual name='base_link_visual'>
+      <visual name='$(arg vehicle_name)_base_link_visual'>
         <pose>0.07 0 -0.08 0 0 0</pose>
         <geometry>
           <mesh>
@@ -61,7 +62,7 @@
       <velocity_decay/>
       <self_collide>0</self_collide>
     </link>
-    <link name='plane/imu_link'>
+    <link name='$(arg vehicle_name)_plane/imu_link'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
         <pose>0 0 0 0 0 0</pose>
@@ -77,8 +78,8 @@
       </inertial>
     </link>
     <joint name='plane/imu_joint' type='revolute'>
-      <child>plane/imu_link</child>
-      <parent>base_link</parent>
+      <child>$(arg vehicle_name)_plane/imu_link</child>
+      <parent>$(arg vehicle_name)_base_link</parent>
       <axis>
         <xyz>1 0 0</xyz>
         <limit>
@@ -94,7 +95,7 @@
         <use_parent_model_frame>1</use_parent_model_frame>
       </axis>
     </joint>
-    <link name='rotor_puller'>
+    <link name='$(arg vehicle_name)_rotor_puller'>
       <pose>0.3 0 0.0 0 1.57 0</pose>
       <inertial>
         <pose>0 0 0 0 0 0</pose>
@@ -108,7 +109,7 @@
           <izz>0.000167604</izz>
         </inertia>
       </inertial>
-      <collision name='rotor_puller_collision'>
+      <collision name='$(arg vehicle_name)_rotor_puller_collision'>
         <pose>0.0 0 0.0 0 0 0</pose>
         <geometry>
           <cylinder>
@@ -125,7 +126,7 @@
           </friction>
         </surface>
       </collision>
-      <visual name='rotor_puller_visual'>
+      <visual name='$(arg vehicle_name)_rotor_puller_visual'>
         <pose>0 0 -0.09 0 0 0</pose>
         <geometry>
           <mesh>
@@ -144,9 +145,9 @@
       <velocity_decay/>
       <self_collide>0</self_collide>
     </link>
-    <joint name='rotor_puller_joint' type='revolute'>
-      <child>rotor_puller</child>
-      <parent>base_link</parent>
+    <joint name='$(arg vehicle_name)_rotor_puller_joint' type='revolute'>
+      <child>$(arg vehicle_name)_rotor_puller</child>
+      <parent>$(arg vehicle_name)_base_link</parent>
       <axis>
         <xyz>1 0 0</xyz>
         <limit>
@@ -161,7 +162,7 @@
       </axis>
     </joint>
 
-    <link name="left_elevon">
+    <link name="$(arg vehicle_name)_left_elevon">
       <inertial>
         <mass>0.00000001</mass>
         <inertia>
@@ -175,7 +176,7 @@
         <pose>0 0.3 0 0.00 0 0.0</pose>
       </inertial>
     </link>
-    <link name="right_elevon">
+    <link name="$(arg vehicle_name)_right_elevon">
       <inertial>
         <mass>0.00000001</mass>
         <inertia>
@@ -189,7 +190,7 @@
         <pose>0 -0.3 0 0.00 0 0.0</pose>
       </inertial>
     </link>
-    <link name="elevator">
+    <link name="$(arg vehicle_name)_elevator">
       <inertial>
         <mass>0.00000001</mass>
         <inertia>
@@ -203,7 +204,7 @@
         <pose> -0.5 0 0 0.00 0 0.0</pose>
       </inertial>
     </link>
-    <link name="rudder">
+    <link name="$(arg vehicle_name)_rudder">
       <inertial>
         <mass>0.00000001</mass>
         <inertia>
@@ -217,9 +218,9 @@
         <pose>-0.5 0 0.05 0 0 0 </pose>
       </inertial>
     </link>
-    <joint name='left_elevon_joint' type='revolute'>
-      <parent>base_link</parent>
-      <child>left_elevon</child>
+    <joint name='$(arg vehicle_name)_left_elevon_joint' type='revolute'>
+      <parent>$(arg vehicle_name)_base_link</parent>
+      <child>$(arg vehicle_name)_left_elevon</child>
       <pose>0 0.3 0 0.00 0 0.0</pose>
       <axis>
         <xyz>0 1 0</xyz>
@@ -238,9 +239,9 @@
         </ode>
       </physics>
     </joint>
-    <joint name='right_elevon_joint' type='revolute'>
-      <parent>base_link</parent>
-      <child>right_elevon</child>
+    <joint name='$(arg vehicle_name)_right_elevon_joint' type='revolute'>
+      <parent>$(arg vehicle_name)_base_link</parent>
+      <child>$(arg vehicle_name)_right_elevon</child>
       <pose>0 -0.3 0 0.00 0 0.0</pose>
       <axis>
         <xyz>0 1 0</xyz>
@@ -259,9 +260,9 @@
         </ode>
       </physics>
     </joint>
-    <joint name='elevator_joint' type='revolute'>
-      <parent>base_link</parent>
-      <child>elevator</child>
+    <joint name='$(arg vehicle_name)_elevator_joint' type='revolute'>
+      <parent>$(arg vehicle_name)_base_link</parent>
+      <child>$(arg vehicle_name)_elevator</child>
       <pose> -0.5 0 0 0 0 0</pose>
       <axis>
         <xyz>0 1 0</xyz>
@@ -280,9 +281,9 @@
         </ode>
       </physics>
     </joint>
-    <joint name='rudder_joint' type='revolute'>
-      <parent>base_link</parent>
-      <child>rudder</child>
+    <joint name='$(arg vehicle_name)_rudder_joint' type='revolute'>
+      <parent>$(arg vehicle_name)_base_link</parent>
+      <child>$(arg vehicle_name)_rudder</child>
       <pose>-0.5 0 0.05 0.00 0 0.0</pose>
       <axis>
         <xyz>1 0 0</xyz>
@@ -315,9 +316,9 @@
       <air_density>1.2041</air_density>
       <forward>1 0 0</forward>
       <upward>0 0 1</upward>
-      <link_name>base_link</link_name>
+      <link_name>$(arg vehicle_name)_base_link</link_name>
       <control_joint_name>
-        left_elevon_joint
+        $(arg vehicle_name)_left_elevon_joint
       </control_joint_name>
       <control_joint_rad_to_cl>-0.5</control_joint_rad_to_cl>
     </plugin>
@@ -335,13 +336,13 @@
       <air_density>1.2041</air_density>
       <forward>1 0 0</forward>
       <upward>0 0 1</upward>
-      <link_name>base_link</link_name>
+      <link_name>$(arg vehicle_name)_base_link</link_name>
       <control_joint_name>
-        right_elevon_joint
+        $(arg vehicle_name)_right_elevon_joint
       </control_joint_name>
       <control_joint_rad_to_cl>-0.5</control_joint_rad_to_cl>
     </plugin>
-    <plugin name="elevator" filename="libLiftDragPlugin.so">
+    <plugin name="$(arg vehicle_name)_elevator" filename="libLiftDragPlugin.so">
       <a0>-0.2</a0>
       <cla>4.752798721</cla>
       <cda>0.6417112299</cda>
@@ -355,13 +356,13 @@
       <air_density>1.2041</air_density>
       <forward>1 0 0</forward>
       <upward>0 0 1</upward>
-      <link_name>base_link</link_name>
+      <link_name>$(arg vehicle_name)_base_link</link_name>
       <control_joint_name>
-        elevator_joint
+        $(arg vehicle_name)_elevator_joint
       </control_joint_name>
       <control_joint_rad_to_cl>-4.0</control_joint_rad_to_cl>
     </plugin>
-    <plugin name="rudder" filename="libLiftDragPlugin.so">
+    <plugin name="$(arg vehicle_name)_rudder" filename="libLiftDragPlugin.so">
       <a0>0.0</a0>
       <cla>4.752798721</cla>
       <cda>0.6417112299</cda>
@@ -375,12 +376,12 @@
       <air_density>1.2041</air_density>
       <forward>1 0 0</forward>
       <upward>0 1 0</upward>
-      <link_name>base_link</link_name>
+      <link_name>$(arg vehicle_name)_base_link</link_name>
     </plugin>
     <plugin name='puller' filename='libgazebo_motor_model.so'>
       <robotNamespace></robotNamespace>
-      <jointName>rotor_puller_joint</jointName>
-      <linkName>rotor_puller</linkName>
+      <jointName>$(arg vehicle_name)_rotor_puller_joint</jointName>
+      <linkName>$(arg vehicle_name)_rotor_puller</linkName>
       <turningDirection>cw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
@@ -396,7 +397,7 @@
     </plugin>
     <plugin name='gazebo_imu_plugin' filename='libgazebo_imu_plugin.so'>
       <robotNamespace></robotNamespace>
-      <linkName>plane/imu_link</linkName>
+      <linkName>$(arg vehicle_name)_plane/imu_link</linkName>
       <imuTopic>/imu</imuTopic>
       <gyroscopeNoiseDensity>0.0003394</gyroscopeNoiseDensity>
       <gyroscopeRandomWalk>3.8785e-05</gyroscopeRandomWalk>
@@ -408,8 +409,8 @@
       <accelerometerTurnOnBiasSigma>0.196</accelerometerTurnOnBiasSigma>
     </plugin>
     <plugin name='wind_plugin' filename='libgazebo_wind_plugin.so'>
-      <frameId>base_link</frameId>
-      <linkName>base_link</linkName>
+      <frameId>$(arg vehicle_name)_base_link</frameId>
+      <linkName>$(arg vehicle_name)_base_link</linkName>
       <robotNamespace/>
       <xyzOffset>1 0 0</xyzOffset>
       <windDirection>0 1 0</windDirection>
@@ -463,43 +464,51 @@
           <zero_position_disarmed>0</zero_position_disarmed>
           <zero_position_armed>0</zero_position_armed>
           <joint_control_type>velocity</joint_control_type>
-          <joint_name>rotor_puller_joint</joint_name>
+          <joint_name>$(arg vehicle_name)_rotor_puller_joint</joint_name>
         </channel>
-        <channel name="left_elevon">
+        <channel name="$(arg vehicle_name)_left_elevon">
           <input_index>5</input_index>
           <input_offset>0</input_offset>
           <input_scaling>1</input_scaling>
           <zero_position_disarmed>0</zero_position_disarmed>
           <zero_position_armed>0</zero_position_armed>
           <joint_control_type>position_kinematic</joint_control_type>
-          <joint_name>left_elevon_joint</joint_name>
+          <joint_name>$(arg vehicle_name)_left_elevon_joint</joint_name>
         </channel>
-        <channel name="right_elevon">
+        <channel name="$(arg vehicle_name)_right_elevon">
           <input_index>6</input_index>
           <input_offset>0</input_offset>
           <input_scaling>1</input_scaling>
           <zero_position_disarmed>0</zero_position_disarmed>
           <zero_position_armed>0</zero_position_armed>
           <joint_control_type>position_kinematic</joint_control_type>
-          <joint_name>right_elevon_joint</joint_name>
+          <joint_name>$(arg vehicle_name)_right_elevon_joint</joint_name>
         </channel>
-        <channel name="elevator">
+        <channel name="$(arg vehicle_name)_elevator">
           <input_index>7</input_index>
           <input_offset>0</input_offset>
           <input_scaling>1</input_scaling>
           <zero_position_disarmed>0</zero_position_disarmed>
           <zero_position_armed>0</zero_position_armed>
           <joint_control_type>position_kinematic</joint_control_type>
-          <joint_name>elevator_joint</joint_name>
+          <joint_name>$(arg vehicle_name)_elevator_joint</joint_name>
         </channel>
       </control_channels>
     </plugin>
     <static>0</static>
+    <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <ros>
+        <namespace>/demo</namespace>
+        <argument>joint_states:=joint_states</argument>
+      </ros>
+      <joint_name>$(arg vehicle_name)::$(arg vehicle_name)_rotor_puller_joint</joint_name>
+      <update_rate>100</update_rate>
+    </plugin>
   <xacro:if value="$(arg enable_camera)">
     <xacro:include filename="$(arg rotors_description_dir)/geotagged_cam/geotagged_cam.sdf.xacro">
     </xacro:include>
     <joint name="geotagged_cam_joint" type="fixed">
-      <parent>base_link</parent>
+      <parent>$(arg vehicle_name)_base_link</parent>
       <child>geotagged_cam::camera_link</child>
     </joint>
   </xacro:if>

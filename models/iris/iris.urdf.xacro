@@ -6,20 +6,21 @@
   <xacro:arg name='camera_pose' default='0 0 0 0 0 0' />
   <xacro:arg name='camera_udp_port' default='5600' />
   <xacro:arg name='rotors_description_dir' default='.'/>
-    <link name='base_link'>
+  <xacro:arg name='vehicle_name' default='iris'/>
+    <link name='$(arg vehicle_name)_base_link'>
       <pose rpy="0  0  0" xyz="0  0  0"/>
       <inertial>
         <mass value="1.5"/>
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <inertia ixx="0.0347563" ixy="0" ixz="0" iyy="0.0458929" iyz="0" izz="0.0977"/>
       </inertial>
-      <collision name="base_link_inertia_collision">
+      <collision name="$(arg vehicle_name)_base_link_inertia_collision">
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <geometry>
           <box size="0.47 0.47 0.11"/>
         </geometry>
       </collision>
-      <visual name="base_link_inertia_visual">
+      <visual name="$(arg vehicle_name)_base_link_inertia_visual">
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <geometry>
           <mesh filename="package://mavlink_sitl_gazebo/models/rotors_description/meshes/iris.stl" scale="1 1 1"/>
@@ -29,13 +30,13 @@
         </material>
       </visual>
     </link>
-    <gazebo reference="base_link">
+    <gazebo reference="$(arg vehicle_name)_base_link">
       <material>Gazebo/Black</material>
       <gravity>1</gravity>
       <velocity_decay/>
       <self_collide>0</self_collide>
     </gazebo>
-    <link name='/imu_link'>
+    <link name='$(arg vehicle_name)_imu_link'>
       <pose rpy="0  0  0" xyz="0  0  0"/>
       <inertial>
         <mass value="0.015"/>
@@ -44,26 +45,26 @@
       </inertial>
     </link>
     <joint name="imu_joint" type="revolute">
-      <parent link="base_link"/>
-      <child link="/imu_link"/>
+      <parent link="$(arg vehicle_name)_base_link"/>
+      <child link="$(arg vehicle_name)_imu_link"/>
       <origin rpy="0  0  0" xyz="0  0  0"/>
       <axis xyz="1  0  0"/>
       <limit effort="0.0" lower="0.0" upper="0.0" velocity="0.0"/>
     </joint>
-    <link name='rotor_0'>
+    <link name='$(arg vehicle_name)_rotor_0'>
       <pose rpy="0.13 -0.22" xyz="0.023 0 -0 0"/>
       <inertial>
         <mass value="0.005"/>
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <inertia ixx="9.75e-07" ixy="0" ixz="0" iyy="0.000273104" iyz="0" izz="0.000274004"/>
       </inertial>
-      <collision name="rotor_0_collision">
+      <collision name="$(arg vehicle_name)_rotor_0_collision">
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <geometry>
           <cylinder length="0.005" radius="0.128"/>
         </geometry>
       </collision>
-      <visual name="rotor_0_visual">
+      <visual name="$(arg vehicle_name)_rotor_0_visual">
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <geometry>
           <mesh filename="package://mavlink_sitl_gazebo/models/tiltrotor/meshes/iris_prop_ccw.dae" scale="1 1 1"/>
@@ -73,33 +74,33 @@
         </material>
       </visual>
     </link>
-    <gazebo reference="rotor_0">
+    <gazebo reference="$(arg vehicle_name)_rotor_0">
       <material>Gazebo/Blue</material>
       <gravity>1</gravity>
       <velocity_decay/>
       <self_collide>0</self_collide>
     </gazebo>
-    <joint name="rotor_0_joint" type="revolute">
-      <parent link="base_link"/>
-      <child link="rotor_0"/>
+    <joint name="$(arg vehicle_name)_rotor_0_joint" type="revolute">
+      <parent link="$(arg vehicle_name)_base_link"/>
+      <child link="$(arg vehicle_name)_rotor_0"/>
       <origin rpy="0  0  0" xyz="0.13  -0.22   0.023"/>
       <axis xyz="0  0  1"/>
       <limit effort="0.0" lower="-1e+16" upper="1e+16" velocity="0.0"/>
     </joint>
-    <link name='rotor_1'>
+    <link name='$(arg vehicle_name)_rotor_1'>
       <pose rpy="-0.13 0.2" xyz="0.023 0 -0 0"/>
       <inertial>
         <mass value="0.005"/>
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <inertia ixx="9.75e-07" ixy="0" ixz="0" iyy="0.000273104" iyz="0" izz="0.000274004"/>
       </inertial>
-      <collision name="rotor_1_collision">
+      <collision name="$(arg vehicle_name)_rotor_1_collision">
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <geometry>
           <cylinder length="0.005" radius="0.128"/>
         </geometry>
       </collision>
-      <visual name="rotor_1_visual">
+      <visual name="$(arg vehicle_name)_rotor_1_visual">
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <geometry>
           <mesh filename="package://mavlink_sitl_gazebo/models/tiltrotor/meshes/iris_prop_ccw.dae" scale="1 1 1"/>
@@ -109,33 +110,33 @@
         </material>
       </visual>
     </link>
-    <gazebo reference="rotor_1">
+    <gazebo reference="$(arg vehicle_name)_rotor_1">
       <material>Gazebo/Black</material>
       <gravity>1</gravity>
       <velocity_decay/>
       <self_collide>0</self_collide>
     </gazebo>
-    <joint name="rotor_1_joint" type="revolute">
-      <parent link="base_link"/>
-      <child link="rotor_1"/>
+    <joint name="$(arg vehicle_name)_rotor_1_joint" type="revolute">
+      <parent link="$(arg vehicle_name)_base_link"/>
+      <child link="$(arg vehicle_name)_rotor_1"/>
       <origin rpy="0  0  0" xyz="-0.13   0.2    0.023"/>
       <axis xyz="0  0  1"/>
       <limit effort="0.0" lower="-1e+16" upper="1e+16" velocity="0.0"/>
     </joint>
-    <link name='rotor_2'>
+    <link name='$(arg vehicle_name)_rotor_2'>
       <pose rpy="0.13 0.2" xyz="0.023 0 -0 0"/>
       <inertial>
         <mass value="0.005"/>
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <inertia ixx="9.75e-07" ixy="0" ixz="0" iyy="0.000273104" iyz="0" izz="0.000274004"/>
       </inertial>
-      <collision name="rotor_2_collision">
+      <collision name="$(arg vehicle_name)_rotor_2_collision">
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <geometry>
           <cylinder length="0.005" radius="0.128"/>
         </geometry>
       </collision>
-      <visual name="rotor_2_visual">
+      <visual name="$(arg vehicle_name)_rotor_2_visual">
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <geometry>
           <mesh filename="package://mavlink_sitl_gazebo/models/tiltrotor/meshes/iris_prop_cw.dae" scale="1 1 1"/>
@@ -145,33 +146,33 @@
         </material>
       </visual>
     </link>
-    <gazebo reference="rotor_2">
+    <gazebo reference="$(arg vehicle_name)_rotor_2">
       <material>Gazebo/Blue</material>
       <gravity>1</gravity>
       <velocity_decay/>
       <self_collide>0</self_collide>
     </gazebo>
-    <joint name="rotor_2_joint" type="revolute">
-      <parent link="base_link"/>
-      <child link="rotor_2"/>
+    <joint name="$(arg vehicle_name)_rotor_2_joint" type="revolute">
+      <parent link="$(arg vehicle_name)_base_link"/>
+      <child link="$(arg vehicle_name)_rotor_2"/>
       <origin rpy="0  0  0" xyz="0.13   0.22   0.023"/>
       <axis xyz="0  0  1"/>
       <limit effort="0.0" lower="-1e+16" upper="1e+16" velocity="0.0"/>
     </joint>
-    <link name='rotor_3'>
+    <link name='$(arg vehicle_name)_rotor_3'>
       <pose rpy="-0.13 -0.2" xyz="0.023 0 -0 0"/>
       <inertial>
         <mass value="0.005"/>
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <inertia ixx="9.75e-07" ixy="0" ixz="0" iyy="0.000273104" iyz="0" izz="0.000274004"/>
       </inertial>
-      <collision name="rotor_3_collision">
+      <collision name="$(arg vehicle_name)_rotor_3_collision">
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <geometry>
           <cylinder length="0.005" radius="0.128"/>
         </geometry>
       </collision>
-      <visual name="rotor_3_visual">
+      <visual name="$(arg vehicle_name)_rotor_3_visual">
         <origin rpy="0  0  0" xyz="0  0  0"/>
         <geometry>
           <mesh filename="package://mavlink_sitl_gazebo/models/tiltrotor/meshes/iris_prop_cw.dae" scale="1 1 1"/>
@@ -181,15 +182,15 @@
         </material>
       </visual>
     </link>
-    <gazebo reference="rotor_3">
+    <gazebo reference="$(arg vehicle_name)_rotor_3">
       <material>Gazebo/Black</material>
       <gravity>1</gravity>
       <velocity_decay/>
       <self_collide>0</self_collide>
     </gazebo>
-    <joint name="rotor_3_joint" type="revolute">
-      <parent link="base_link"/>
-      <child link="rotor_3"/>
+    <joint name="$(arg vehicle_name)_rotor_3_joint" type="revolute">
+      <parent link="$(arg vehicle_name)_base_link"/>
+      <child link="$(arg vehicle_name)_rotor_3"/>
       <origin rpy="0  0  0" xyz="-0.13  -0.2    0.023"/>
       <axis xyz="0  0  1"/>
       <limit effort="0.0" lower="-1e+16" upper="1e+16" velocity="0.0"/>
@@ -198,13 +199,13 @@
 <gazebo>
     <plugin name='multirobot_base_plugin' filename='libgazebo_multirotor_base_plugin.so'>
       <robotNamespace/>
-      <linkName>base_link</linkName>
+      <linkName>$(arg vehicle_name)_base_link</linkName>
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
     </plugin>
     <plugin name='front_right_motor_model' filename='libgazebo_motor_model.so'>
       <robotNamespace/>
-      <jointName>rotor_0_joint</jointName>
-      <linkName>rotor_0</linkName>
+      <jointName>$(arg vehicle_name)_rotor_0_joint</jointName>
+      <linkName>$(arg vehicle_name)_rotor_0</linkName>
       <turningDirection>ccw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
@@ -220,8 +221,8 @@
     </plugin>
     <plugin name='back_left_motor_model' filename='libgazebo_motor_model.so'>
       <robotNamespace/>
-      <jointName>rotor_1_joint</jointName>
-      <linkName>rotor_1</linkName>
+      <jointName>$(arg vehicle_name)_rotor_1_joint</jointName>
+      <linkName>$(arg vehicle_name)_rotor_1</linkName>
       <turningDirection>ccw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
@@ -237,8 +238,8 @@
     </plugin>
     <plugin name='front_left_motor_model' filename='libgazebo_motor_model.so'>
       <robotNamespace/>
-      <jointName>rotor_2_joint</jointName>
-      <linkName>rotor_2</linkName>
+      <jointName>$(arg vehicle_name)_rotor_2_joint</jointName>
+      <linkName>$(arg vehicle_name)_rotor_2</linkName>
       <turningDirection>cw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
@@ -254,8 +255,8 @@
     </plugin>
     <plugin name='back_right_motor_model' filename='libgazebo_motor_model.so'>
       <robotNamespace/>
-      <jointName>rotor_3_joint</jointName>
-      <linkName>rotor_3</linkName>
+      <jointName>$(arg vehicle_name)_rotor_3_joint</jointName>
+      <linkName>$(arg vehicle_name)_rotor_3</linkName>
       <turningDirection>cw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
@@ -408,19 +409,19 @@
     <static>0</static>
     <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
       <ros>
-        <namespace>/demo</namespace>
+        <namespace>/</namespace>
         <argument>joint_states:=joint_states</argument>
       </ros>
-      <joint_name>iris_0::imu_link</joint_name>
-      <joint_name>iris_0::rotor_0_joint</joint_name>
-      <joint_name>iris_0::rotor_1_joint</joint_name>
-      <joint_name>iris_0::rotor_2_joint</joint_name>
-      <joint_name>iris_0::rotor_3_joint</joint_name>
+      <joint_name>$(arg vehicle_name)::$(arg vehicle_name)_imu_link</joint_name>
+      <joint_name>$(arg vehicle_name)::$(arg vehicle_name)_rotor_0_joint</joint_name>
+      <joint_name>$(arg vehicle_name)::$(arg vehicle_name)_rotor_1_joint</joint_name>
+      <joint_name>$(arg vehicle_name)::$(arg vehicle_name)_rotor_2_joint</joint_name>
+      <joint_name>$(arg vehicle_name)::$(arg vehicle_name)_rotor_3_joint</joint_name>
       <update_rate>100</update_rate>
     </plugin>
     <plugin name='rotors_gazebo_imu_plugin' filename='libgazebo_imu_plugin.so'>
       <robotNamespace/>
-      <linkName>/imu_link</linkName>
+      <linkName>$(arg vehicle_name)_imu_link</linkName>
       <imuTopic>/imu</imuTopic>
       <gyroscopeNoiseDensity>0.0003394</gyroscopeNoiseDensity>
       <gyroscopeRandomWalk>3.8785e-05</gyroscopeRandomWalk>
@@ -438,7 +439,7 @@
     </xacro:include>
     <xacro:fpv_cam/>
     <joint name="fpv_joint" type="fixed">
-      <parent link="base_link"/>
+      <parent link="$(arg vehicle_name)_base_link"/>
       <child link="camera_link"/>
       <origin rpy="0  0  0" xyz="0  0  0"/>
       <axis xyz="0  0  1"/>

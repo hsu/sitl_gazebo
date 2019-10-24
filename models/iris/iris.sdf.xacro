@@ -6,8 +6,9 @@
   <xacro:arg name='camera_pose' default='0 0 0 0 0 0' />
   <xacro:arg name='camera_udp_port' default='5600' />
   <xacro:arg name='rotors_description_dir' default='.'/>
+  <xacro:arg name='vehicle_name' default='iris'/>
   <model name='iris'>
-    <link name='base_link'>
+    <link name='$(arg vehicle_name)_base_link'>
       <pose frame=''>0 0 0 0 -0 0</pose>
       <inertial>
         <pose frame=''>0 0 0 0 -0 0</pose>
@@ -21,7 +22,7 @@
           <izz>0.0977</izz>
         </inertia>
       </inertial>
-      <collision name='base_link_inertia_collision'>
+      <collision name='$(arg vehicle_name)_base_link_inertia_collision'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <box>
@@ -40,7 +41,7 @@
           </friction>
         </surface>
       </collision>
-      <visual name='base_link_inertia_visual'>
+      <visual name='$(arg vehicle_name)_base_link_inertia_visual'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <mesh>
@@ -59,7 +60,7 @@
       <velocity_decay/>
       <self_collide>0</self_collide>
     </link>
-    <link name='/imu_link'>
+    <link name='$(arg vehicle_name)_imu_link'>
       <pose frame=''>0 0 0 0 -0 0</pose>
       <inertial>
         <pose frame=''>0 0 0 0 -0 0</pose>
@@ -74,9 +75,9 @@
         </inertia>
       </inertial>
     </link>
-    <joint name='/imu_joint' type='revolute'>
-      <child>/imu_link</child>
-      <parent>base_link</parent>
+    <joint name='imu_joint' type='revolute'>
+      <child>$(arg vehicle_name)_imu_link</child>
+      <parent>$(arg vehicle_name)_base_link</parent>
       <axis>
         <xyz>1 0 0</xyz>
         <limit>
@@ -92,7 +93,7 @@
         <use_parent_model_frame>1</use_parent_model_frame>
       </axis>
     </joint>
-    <link name='rotor_0'>
+    <link name='$(arg vehicle_name)_rotor_0'>
       <pose frame=''>0.13 -0.22 0.023 0 -0 0</pose>
       <inertial>
         <pose frame=''>0 0 0 0 -0 0</pose>
@@ -106,7 +107,7 @@
           <izz>0.000274004</izz>
         </inertia>
       </inertial>
-      <collision name='rotor_0_collision'>
+      <collision name='$(arg vehicle_name)_rotor_0_collision'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <cylinder>
@@ -123,7 +124,7 @@
           </friction>
         </surface>
       </collision>
-      <visual name='rotor_0_visual'>
+      <visual name='$(arg vehicle_name)_rotor_0_visual'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <mesh>
@@ -142,9 +143,9 @@
       <velocity_decay/>
       <self_collide>0</self_collide>
     </link>
-    <joint name='rotor_0_joint' type='revolute'>
-      <child>rotor_0</child>
-      <parent>base_link</parent>
+    <joint name='$(arg vehicle_name)_rotor_0_joint' type='revolute'>
+      <child>$(arg vehicle_name)_rotor_0</child>
+      <parent>$(arg vehicle_name)_base_link</parent>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -158,7 +159,7 @@
         <use_parent_model_frame>1</use_parent_model_frame>
       </axis>
     </joint>
-    <link name='rotor_1'>
+    <link name='$(arg vehicle_name)_rotor_1'>
       <pose frame=''>-0.13 0.2 0.023 0 -0 0</pose>
       <inertial>
         <pose frame=''>0 0 0 0 -0 0</pose>
@@ -172,7 +173,7 @@
           <izz>0.000274004</izz>
         </inertia>
       </inertial>
-      <collision name='rotor_1_collision'>
+      <collision name='$(arg vehicle_name)_rotor_1_collision'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <cylinder>
@@ -189,7 +190,7 @@
           </friction>
         </surface>
       </collision>
-      <visual name='rotor_1_visual'>
+      <visual name='$(arg vehicle_name)_rotor_1_visual'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <mesh>
@@ -208,9 +209,9 @@
       <velocity_decay/>
       <self_collide>0</self_collide>
     </link>
-    <joint name='rotor_1_joint' type='revolute'>
-      <child>rotor_1</child>
-      <parent>base_link</parent>
+    <joint name='$(arg vehicle_name)_rotor_1_joint' type='revolute'>
+      <child>$(arg vehicle_name)_rotor_1</child>
+      <parent>$(arg vehicle_name)_base_link</parent>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -224,7 +225,7 @@
         <use_parent_model_frame>1</use_parent_model_frame>
       </axis>
     </joint>
-    <link name='rotor_2'>
+    <link name='$(arg vehicle_name)_rotor_2'>
       <pose frame=''>0.13 0.22 0.023 0 -0 0</pose>
       <inertial>
         <pose frame=''>0 0 0 0 -0 0</pose>
@@ -238,7 +239,7 @@
           <izz>0.000274004</izz>
         </inertia>
       </inertial>
-      <collision name='rotor_2_collision'>
+      <collision name='$(arg vehicle_name)_rotor_2_collision'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <cylinder>
@@ -255,7 +256,7 @@
           </friction>
         </surface>
       </collision>
-      <visual name='rotor_2_visual'>
+      <visual name='$(arg vehicle_name)_rotor_2_visual'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <mesh>
@@ -274,9 +275,9 @@
       <velocity_decay/>
       <self_collide>0</self_collide>
     </link>
-    <joint name='rotor_2_joint' type='revolute'>
-      <child>rotor_2</child>
-      <parent>base_link</parent>
+    <joint name='$(arg vehicle_name)_rotor_2_joint' type='revolute'>
+      <child>$(arg vehicle_name)_rotor_2</child>
+      <parent>$(arg vehicle_name)_base_link</parent>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -290,7 +291,7 @@
         <use_parent_model_frame>1</use_parent_model_frame>
       </axis>
     </joint>
-    <link name='rotor_3'>
+    <link name='$(arg vehicle_name)_rotor_3'>
       <pose frame=''>-0.13 -0.2 0.023 0 -0 0</pose>
       <inertial>
         <pose frame=''>0 0 0 0 -0 0</pose>
@@ -304,7 +305,7 @@
           <izz>0.000274004</izz>
         </inertia>
       </inertial>
-      <collision name='rotor_3_collision'>
+      <collision name='$(arg vehicle_name)_rotor_3_collision'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <cylinder>
@@ -321,7 +322,7 @@
           </friction>
         </surface>
       </collision>
-      <visual name='rotor_3_visual'>
+      <visual name='$(arg vehicle_name)_rotor_3_visual'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <mesh>
@@ -340,9 +341,9 @@
       <velocity_decay/>
       <self_collide>0</self_collide>
     </link>
-    <joint name='rotor_3_joint' type='revolute'>
-      <child>rotor_3</child>
-      <parent>base_link</parent>
+    <joint name='$(arg vehicle_name)_rotor_3_joint' type='revolute'>
+      <child>$(arg vehicle_name)_rotor_3</child>
+      <parent>$(arg vehicle_name)_base_link</parent>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -358,13 +359,13 @@
     </joint>
     <plugin name='rosbag' filename='libgazebo_multirotor_base_plugin.so'>
       <robotNamespace/>
-      <linkName>base_link</linkName>
+      <linkName>$(arg vehicle_name)_base_link</linkName>
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
     </plugin>
     <plugin name='front_right_motor_model' filename='libgazebo_motor_model.so'>
       <robotNamespace/>
-      <jointName>rotor_0_joint</jointName>
-      <linkName>rotor_0</linkName>
+      <jointName>$(arg vehicle_name)_rotor_0_joint</jointName>
+      <linkName>$(arg vehicle_name)_rotor_0</linkName>
       <turningDirection>ccw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
@@ -380,8 +381,8 @@
     </plugin>
     <plugin name='back_left_motor_model' filename='libgazebo_motor_model.so'>
       <robotNamespace/>
-      <jointName>rotor_1_joint</jointName>
-      <linkName>rotor_1</linkName>
+      <jointName>$(arg vehicle_name)_rotor_1_joint</jointName>
+      <linkName>$(arg vehicle_name)_rotor_1</linkName>
       <turningDirection>ccw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
@@ -397,8 +398,8 @@
     </plugin>
     <plugin name='front_left_motor_model' filename='libgazebo_motor_model.so'>
       <robotNamespace/>
-      <jointName>rotor_2_joint</jointName>
-      <linkName>rotor_2</linkName>
+      <jointName>$(arg vehicle_name)_rotor_2_joint</jointName>
+      <linkName>$(arg vehicle_name)_rotor_2</linkName>
       <turningDirection>cw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
@@ -414,8 +415,8 @@
     </plugin>
     <plugin name='back_right_motor_model' filename='libgazebo_motor_model.so'>
       <robotNamespace/>
-      <jointName>rotor_3_joint</jointName>
-      <linkName>rotor_3</linkName>
+      <jointName>$(arg vehicle_name)_rotor_3_joint</jointName>
+      <linkName>$(arg vehicle_name)_rotor_3</linkName>
       <turningDirection>cw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
@@ -565,10 +566,21 @@
         </channel>
       </control_channels>
     </plugin>
+    <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <ros>
+        <namespace>/</namespace>
+        <argument>joint_states:=joint_states</argument>
+      </ros>
+      <joint_name>$(arg vehicle_name)::$(arg vehicle_name)_rotor_0_joint</joint_name>
+      <joint_name>$(arg vehicle_name)::$(arg vehicle_name)_rotor_1_joint</joint_name>
+      <joint_name>$(arg vehicle_name)::$(arg vehicle_name)_rotor_2_joint</joint_name>
+      <joint_name>$(arg vehicle_name)::$(arg vehicle_name)_rotor_3_joint</joint_name>
+      <update_rate>100</update_rate>
+    </plugin>
     <static>0</static>
     <plugin name='rotors_gazebo_imu_plugin' filename='libgazebo_imu_plugin.so'>
       <robotNamespace/>
-      <linkName>/imu_link</linkName>
+      <linkName>$(arg vehicle_name)_imu_link</linkName>
       <imuTopic>/imu</imuTopic>
       <gyroscopeNoiseDensity>0.0003394</gyroscopeNoiseDensity>
       <gyroscopeRandomWalk>3.8785e-05</gyroscopeRandomWalk>
@@ -584,7 +596,7 @@
     </xacro:include>
     <joint name="fpv_cam_joint" type="fixed">
       <child>fpv_cam::link</child>
-      <parent>base_link</parent>
+      <parent>$(arg vehicle_name)_base_link</parent>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
