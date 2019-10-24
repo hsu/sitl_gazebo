@@ -9,12 +9,25 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+option(BUILD_GSTREAMER_PLUGIN "enable gstreamer plugin" ON)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 find_package(ament_cmake REQUIRED)
 find_package(Boost 1.58 REQUIRED COMPONENTS system thread filesystem)
 find_package(gazebo REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(TinyXML REQUIRED)
+
+if (BUILD_GSTREAMER_PLUGIN)
+  pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
+  if (GSTREAMER_FOUND)
+    if("${GAZEBO_VERSION}" VERSION_LESS "8.0")
+      find_package (Qt4)
+      include (${QT_USE_FILE})
+    endif()
+  endif()
+endif()
 
 set(PROTOBUF_IMPORT_DIRS "")
 foreach(ITR ${GAZEBO_INCLUDE_DIRS})
@@ -72,7 +85,24 @@ include_directories(
   ${GAZEBO_MSG_INCLUDE_DIRS}
   ${GAZEBO_INCLUDE_DIRS}
   ${MAVLINK_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
+
+link_libraries(
+  ${OpenCV_LIBRARIES}
+)
+
+if (GSTREAMER_FOUND)
+  include_directories(
+    ${GSTREAMER_INCLUDE_DIRS}
+  )
+endif()
+
+if (GSTREAMER_FOUND)
+  link_libraries(
+    ${GSTREAMER_LIBRARIES}
+  )
+endif()
 
 function(glob_generate target file_glob)
   file(GLOB_RECURSE glob_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${file_glob})
@@ -183,6 +213,25 @@ set(plugins
 foreach(plugin ${plugins})
   target_link_libraries(${plugin} ${Boost_LIBRARIES} ${GAZEBO_LIBRARIES} ${TinyXML_LIBRARIES})
 endforeach()
+
+if (GSTREAMER_FOUND)
+  add_library(gazebo_gst_camera_plugin SHARED src/gazebo_gst_camera_plugin.cpp)
+  set(plugins
+    ${plugins}
+    gazebo_gst_camera_plugin
+  )
+  message(STATUS "Found GStreamer: adding gst_camera_plugin")
+  if("${GAZEBO_VERSION}" VERSION_LESS "8.0")
+    QT4_WRAP_CPP(headers_MOC include/gazebo_video_stream_widget.h)
+    add_library(gazebo_video_stream_widget SHARED ${headers_MOC} src/gazebo_video_stream_widget.cpp)
+    target_link_libraries(gazebo_video_stream_widget ${GAZEBO_LIBRARIES} ${QT_LIBRARIES} ${PROTOBUF_LIBRARIES})
+    set(plugins
+      ${plugins}
+      gazebo_video_stream_widget
+    )
+    message(STATUS "Found GStreamer: adding gst_video_stream_widget")
+  endif()
+endif()
 
 install(DIRECTORY models
  DESTINATION share/${PROJECT_NAME}
