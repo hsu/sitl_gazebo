@@ -170,7 +170,7 @@ add_library(physics_msgs SHARED ${PHY_PROTO_SRCS})
 add_library(std_msgs SHARED ${STD_PROTO_SRCS})
 add_library(sensor_msgs SHARED ${SEN_PROTO_SRCS})
 
-link_libraries(mav_msgs nav_msgs std_msgs sensor_msgs)
+link_libraries(mav_msgs nav_msgs std_msgs sensor_msgs physics_msgs)
 
 add_library(gazebo_geotagged_images_plugin SHARED src/gazebo_geotagged_images_plugin.cpp)
 add_library(gazebo_gps_plugin SHARED src/gazebo_gps_plugin.cpp)
@@ -243,6 +243,7 @@ install(TARGETS
   nav_msgs
   std_msgs
   sensor_msgs
+  physics_msgs
  ARCHIVE DESTINATION lib
  LIBRARY DESTINATION lib
  RUNTIME DESTINATION bin)
