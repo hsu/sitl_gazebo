@@ -25,6 +25,17 @@ if (BUILD_GSTREAMER_PLUGIN)
     if("${GAZEBO_VERSION}" VERSION_LESS "8.0")
       find_package (Qt4)
       include (${QT_USE_FILE})
+    else()
+      # In order to find Qt5 in macOS, the Qt5 path needs to be added to the CMake prefix path.
+      if(APPLE)
+        execute_process(COMMAND brew --prefix qt5
+                        ERROR_QUIET
+                        OUTPUT_VARIABLE QT5_PREFIX_PATH
+                        OUTPUT_STRIP_TRAILING_WHITESPACE
+                       )
+        list(APPEND CMAKE_PREFIX_PATH "${QT5_PREFIX_PATH}/lib/cmake")
+      endif()
+      find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
     endif()
   endif()
 endif()
@@ -47,7 +58,7 @@ endif()
 if("${GAZEBO_VERSION}" VERSION_LESS "6.0")
   message(FATAL_ERROR "You need at least Gazebo 6.0. Your version: ${GAZEBO_VERSION}")
 else()
-  message("Gazebo version: ${GAZEBO_VERSION}")
+  message(STATUS "Gazebo version: ${GAZEBO_VERSION}")
 endif()
 
 find_package(Eigen3 QUIET)
@@ -101,6 +112,8 @@ endif()
 if (GSTREAMER_FOUND)
   link_libraries(
     ${GSTREAMER_LIBRARIES}
+    glib-2.0
+    gobject-2.0
   )
 endif()
 
@@ -225,6 +238,15 @@ if (GSTREAMER_FOUND)
     QT4_WRAP_CPP(headers_MOC include/gazebo_video_stream_widget.h)
     add_library(gazebo_video_stream_widget SHARED ${headers_MOC} src/gazebo_video_stream_widget.cpp)
     target_link_libraries(gazebo_video_stream_widget ${GAZEBO_LIBRARIES} ${QT_LIBRARIES} ${PROTOBUF_LIBRARIES})
+    set(plugins
+      ${plugins}
+      gazebo_video_stream_widget
+    )
+    message(STATUS "Found GStreamer: adding gst_video_stream_widget")
+  else()
+    QT5_WRAP_CPP(headers_MOC include/gazebo_video_stream_widget.h)
+    add_library(gazebo_video_stream_widget SHARED ${headers_MOC} src/gazebo_video_stream_widget.cpp)
+    target_link_libraries(gazebo_video_stream_widget ${GAZEBO_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${PROTOBUF_LIBRARIES} ${Qt5Test_LIBRARIES})
     set(plugins
       ${plugins}
       gazebo_video_stream_widget
