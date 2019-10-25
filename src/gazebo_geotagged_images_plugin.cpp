@@ -415,8 +415,15 @@ bool GeotaggedImagesPlugin::_init_udp(sdf::ElementPtr sdf) {
             }
         }
     }
-
     */
+
+    if (sdf->HasElement("camera_control_udp_port")) {
+        _camera_control_udp_port = sdf->GetElement("camera_control_udp_port")->Get<int>();
+    }
+    if (sdf->HasElement("qgc_udp_port")) {
+        _qgc_udp_port = sdf->GetElement("qgc_udp_port")->Get<int>();
+    }
+
     //Create socket
     if ((_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         gzerr << "Create camera plugin UDP socket failed" << endl;
@@ -426,19 +433,19 @@ bool GeotaggedImagesPlugin::_init_udp(sdf::ElementPtr sdf) {
     _myaddr.sin_family = AF_INET;
     _myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     // Choose the default cam port
-    _myaddr.sin_port = htons(14530);
+    _myaddr.sin_port = htons(_camera_control_udp_port);
     if (::bind(_fd, (struct sockaddr *)&_myaddr, sizeof(_myaddr)) < 0) {
         gzerr << "Bind failed for camera UDP plugin" << endl;
         return false;
     }
     _gcsaddr.sin_family = AF_INET;
     _gcsaddr.sin_addr.s_addr = mavlink_addr;
-    _gcsaddr.sin_port = htons(14550);
+    _gcsaddr.sin_port = htons(_qgc_udp_port);
     _fds[0].fd = _fd;
     _fds[0].events = POLLIN;
     mavlink_status_t* chan_state = mavlink_get_channel_status(MAVLINK_COMM_1);
     chan_state->flags &= ~(MAVLINK_STATUS_FLAG_OUT_MAVLINK1);
-    gzmsg << "Camera on udp port 14530\n";
+    gzmsg << "Camera on udp port " << _camera_control_udp_port << "\n";
     return true;
 }
 
