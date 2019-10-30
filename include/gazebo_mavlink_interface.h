@@ -105,9 +105,9 @@ static const std::string kDefaultNamespace = "";
 static const std::string kDefaultMotorVelocityReferencePubTopic = "/gazebo/command/motor_speed";
 
 static const std::string kDefaultImuTopic = "/imu";
-static const std::string kDefaultLidarTopic = "/link/lidar";
+static const std::string kDefaultLidarTopic = "lidar";
 static const std::string kDefaultOpticalFlowTopic = "/px4flow/link/opticalFlow";
-static const std::string kDefaultSonarTopic = "/sonar_model/link/sonar";
+static const std::string kDefaultSonarTopic = "sonar";
 static const std::string kDefaultIRLockTopic = "/camera/link/irlock";
 static const std::string kDefaultGPSTopic = "/gps";
 static const std::string kDefaultVisionTopic = "/vision_odom";
@@ -162,6 +162,8 @@ public:
     groundtruth_lat_rad(0.0),
     groundtruth_lon_rad(0.0),
     groundtruth_altitude(0.0),
+    lidar_orientation_ {},
+    sonar_orientation_ {},
     mavlink_udp_port_(kDefaultMavlinkUdpPort),
     mavlink_tcp_port_(kDefaultMavlinkTcpPort),
     simulator_socket_fd_(0),
@@ -263,6 +265,16 @@ private:
   bool IsRunning();
   void onSigInt();
 
+  /**
+   * @brief Set the MAV_SENSOR_ORIENTATION enum value based on the sensor orientation
+   *
+   * @param[in] rootModel		The root model where the sensor is attached
+   * @param[in] u_Xs				Unit vector of X-axis sensor in `base_link` frame
+   * @param[in] sensor_msg	The Mavlink DISTANCE_SENSOR message struct
+   */
+  template <class T>
+  void setMavlinkSensorOrientation(const ignition::math::Vector3d& u_Xs, T& sensor_msg);
+
   // Serial interface
   void open();
   void close();
@@ -318,6 +330,9 @@ private:
   double groundtruth_altitude;
 
   double imu_update_interval_ = 0.004; ///< Used for non-lockstep
+
+  ignition::math::Quaterniond lidar_orientation_;	///< Lidar link orientation with respect to the base_link
+  ignition::math::Quaterniond sonar_orientation_;	///< Sonar link orientation with respect to the base_link
 
   ignition::math::Vector3d gravity_W_;
   ignition::math::Vector3d velocity_prev_W_;
