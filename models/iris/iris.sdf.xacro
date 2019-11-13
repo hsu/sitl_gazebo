@@ -3,6 +3,7 @@
   <xacro:arg name='mavlink_tcp_port' default='4560' />
   <xacro:arg name='qgc_udp_port' default='4560' />
   <xacro:arg name='enable_camera' default='true' />
+  <xacro:arg name='enable_ir_camera' default='true' />
   <xacro:arg name='camera_pose' default='0 0 0 0 0 0' />
   <xacro:arg name='camera_udp_port' default='5600' />
   <xacro:arg name='rotors_description_dir' default='.'/>
@@ -603,5 +604,13 @@
       </axis>
     </joint>
   </xacro:if>
-  </model>
+  <xacro:if value="$(arg enable_ir_camera)">
+    <xacro:include filename="$(arg rotors_description_dir)/ir_cam/ir_cam.sdf.xacro">
+    </xacro:include>
+    <joint name="ir_camera_joint" type="fixed">
+      <parent>$(arg vehicle_name)_base_link</parent>
+      <child>ir_camera_link</child>
+    </joint>
+  </xacro:if>
+ </model>
 </sdf>
