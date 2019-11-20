@@ -381,26 +381,22 @@ add_subdirectory(unit_tests)
 ## Install ##
 #############
 
-set(PLUGIN_PATH ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/plugins)
-set(MODEL_PATH ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/models)
-set(RESOURCE_PATH ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME})
+install(DIRECTORY models
+ DESTINATION share/${PROJECT_NAME}
+)
 
-file(REMOVE_RECURSE ${PROJECT_SOURCE_DIR}/models/.DS_Store)
-file(GLOB models_list LIST_DIRECTORIES true ${PROJECT_SOURCE_DIR}/models/*)
+install(TARGETS
+  ${plugins}
+  mav_msgs
+  nav_msgs
+  std_msgs
+  sensor_msgs
+  physics_msgs
+ ARCHIVE DESTINATION lib
+ LIBRARY DESTINATION lib
+ RUNTIME DESTINATION bin)
 
-file(REMOVE_RECURSE ${PROJECT_SOURCE_DIR}/worlds/.DS_Store)
-file(GLOB worlds_list LIST_DIRECTORIES true ${PROJECT_SOURCE_DIR}/worlds/*)
-
-install(TARGETS ${plugins} mav_msgs nav_msgs std_msgs sensor_msgs DESTINATION ${PLUGIN_PATH})
-install(DIRECTORY ${models_list} DESTINATION ${MODEL_PATH})
-install(FILES ${worlds_list} DESTINATION ${RESOURCE_PATH}/worlds)
-
-configure_file(src/setup.sh.in "${CMAKE_CURRENT_BINARY_DIR}/setup.sh" @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/setup.sh DESTINATION ${RESOURCE_PATH})
-
-install(FILES ${PROJECT_SOURCE_DIR}/package.xml DESTINATION ${RESOURCE_PATH})
-
-#############
+############
 ## Testing ##
 #############
 
@@ -428,21 +424,6 @@ set(CPACK_RPM_PACKAGE_REQUIRES "${DEBIAN_PACKAGE_DEPENDS}")
 set(CPACK_RPM_PACKAGE_DESCRIPTION "Gazebo plugins for px4 sitl.")
 set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${GAZEBO_MAJOR_VERSION}-${PROJECT_VERSION}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${GAZEBO_MAJOR_VERSION}-${PROJECT_VERSION}")
-
-install(DIRECTORY models
- DESTINATION share/${PROJECT_NAME}
-)
-
-install(TARGETS
-  ${plugins}
-  mav_msgs
-  nav_msgs
-  std_msgs
-  sensor_msgs
-  physics_msgs
- ARCHIVE DESTINATION lib
- LIBRARY DESTINATION lib
- RUNTIME DESTINATION bin)
 
 ament_environment_hooks(cmake/50_sitl_gazebo_setup.sh.in)
 ament_package()
