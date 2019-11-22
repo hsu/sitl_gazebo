@@ -2,37 +2,28 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 cmake_policy(SET CMP0042 NEW)
 cmake_policy(SET CMP0048 NEW)
 cmake_policy(SET CMP0054 NEW)
+project(mavlink_sitl_gazebo VERSION 1.0.0)
 
-if (NOT CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/usr" CACHE STRING "install prefix" FORCE)
+if(NOT CMAKE_CXX_STANDARD)
+ set(CMAKE_CXX_STANDARD 14)
 endif()
 
-message(STATUS "install-prefix: ${CMAKE_INSTALL_PREFIX}")
-
 project(mavlink_sitl_gazebo VERSION 1.0.0)
-include(GNUInstallDirs)
 
-#######################
-## Find Dependencies ##
-#######################
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+ add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+option(BUILD_GSTREAMER_PLUGIN "enable gstreamer plugin" ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 option(BUILD_GSTREAMER_PLUGIN "enable gstreamer plugin" ON)
-option(BUILD_ROS_INTERFACE "Enable building ROS dependent plugins" OFF)
-
 option(SEND_VISION_ESTIMATION_DATA "Send Mavlink VISION_POSITION_ESTIMATE msgs" OFF)
 option(SEND_ODOMETRY_DATA "Send Mavlink ODOMETRY msgs" OFF)
-
-# Set c++11 or higher
-include(EnableC++XX)
-
-## System dependencies are found with CMake's conventions
+find_package(ament_cmake REQUIRED)
 find_package(Boost 1.58 REQUIRED COMPONENTS system thread filesystem)
 find_package(gazebo REQUIRED)
-find_package(PkgConfig REQUIRED)
-find_program(px4 REQUIRED)
-find_package(PythonInterp REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(TinyXML REQUIRED)
 if (BUILD_GSTREAMER_PLUGIN)
@@ -67,44 +58,22 @@ endif()
 
 link_directories(${GAZEBO_LIBRARY_DIRS})
 
-add_subdirectory( external/OpticalFlow OpticalFlow )
-set( OpticalFlow_LIBS "OpticalFlow" )
-
-# for ROS subscribers and publishers
-if (BUILD_ROS_INTERFACE)
-  find_package(geometry_msgs REQUIRED)
-  find_package(roscpp REQUIRED)
-  find_package(sensor_msgs REQUIRED)
-endif()
-
-# find MAVLink
-find_package(MAVLink)
-
-# see if catkin was invoked to build this
-if (CATKIN_DEVEL_PREFIX)
-  message(STATUS "catkin ENABLED")
-  find_package(catkin REQUIRED)
-  if (catkin_FOUND)
-    catkin_package()
-  else()
-    message(FATAL_ERROR "catkin not found")
+if (BUILD_GSTREAMER_PLUGIN)
+  pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
+  if (GSTREAMER_FOUND)
+    if("${GAZEBO_VERSION}" VERSION_LESS "8.0")
+      find_package (Qt4)
+      include (${QT_USE_FILE})
+    endif()
   endif()
-else()
-  message(STATUS "catkin DISABLED")
 endif()
 
-# XXX this approach is extremely error prone
-# it would be preferable to either depend on the
-# compiled headers from Gazebo directly
-# or to have something entirely independent.
-#
 set(PROTOBUF_IMPORT_DIRS "")
 foreach(ITR ${GAZEBO_INCLUDE_DIRS})
   if(ITR MATCHES ".*gazebo-[0-9.]+$")
     set(PROTOBUF_IMPORT_DIRS "${ITR}/gazebo/msgs/proto")
   endif()
 endforeach()
-
 # PROTOBUF_IMPORT_DIRS has to be set before
 # find_package is called
 find_package(Protobuf REQUIRED)
@@ -134,12 +103,11 @@ else()
   set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 endif()
 
+find_package(MAVLink)
+
 ###########
 ## Build ##
 ###########
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wno-deprecated-declarations")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 
 set(GAZEBO_MSG_INCLUDE_DIRS)
 foreach(ITR ${GAZEBO_INCLUDE_DIRS})
@@ -150,12 +118,11 @@ endforeach()
 
 include_directories(
   include
-  ${Boost_INCLUDE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
   ${EIGEN3_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}/eigen3	# Workaround for Eigen3
-  ${GAZEBO_INCLUDE_DIRS}
   ${GAZEBO_MSG_INCLUDE_DIRS}
+  ${GAZEBO_INCLUDE_DIRS}
   ${MAVLINK_INCLUDE_DIRS}
   ${OGRE_INCLUDE_DIRS}
   ${OGRE_INCLUDE_DIRS}/Paging		# Workaround for "fatal error: OgrePagedWorldSection.h: No such file or directory"
@@ -235,6 +202,22 @@ add_custom_target(sdf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/iris/iris.s
 # Functions #
 #-----------#
 
+link_libraries(
+  ${OpenCV_LIBRARIES}
+)
+
+if (GSTREAMER_FOUND)
+  include_directories(
+    ${GSTREAMER_INCLUDE_DIRS}
+  )
+endif()
+
+if (GSTREAMER_FOUND)
+  link_libraries(
+    ${GSTREAMER_LIBRARIES}
+  )
+endif()
+
 function(glob_generate target file_glob)
   file(GLOB_RECURSE glob_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${file_glob})
 	set(gen_files)
@@ -282,7 +265,7 @@ set(sensor_msgs
   msgs/OpticalFlow.proto
   msgs/MagneticField.proto
   msgs/Pressure.proto
-  )
+)
 
 PROTOBUF_GENERATE_CPP(MAV_PROTO_SRCS MAV_PROTO_HDRS ${mav_msgs})
 PROTOBUF_GENERATE_CPP(NAV_PROTO_SRCS NAV_PROTO_HDRS ${nav_msgs})
@@ -290,24 +273,24 @@ PROTOBUF_GENERATE_CPP(PHY_PROTO_SRCS PHY_PROTO_HDRS ${physics_msgs})
 PROTOBUF_GENERATE_CPP(STD_PROTO_SRCS STD_PROTO_HDRS ${std_msgs})
 PROTOBUF_GENERATE_CPP(SEN_PROTO_SRCS SEN_PROTO_HDRS ${sensor_msgs})
 
+
+#---------#
+# Plugins #
+#---------#
+
 add_library(mav_msgs SHARED ${MAV_PROTO_SRCS})
 add_library(nav_msgs SHARED ${NAV_PROTO_SRCS})
 add_library(physics_msgs SHARED ${PHY_PROTO_SRCS})
 add_library(std_msgs SHARED ${STD_PROTO_SRCS})
 add_library(sensor_msgs SHARED ${SEN_PROTO_SRCS})
 
-#---------#
-# Plugins #
-#---------#
-
-link_libraries(mav_msgs nav_msgs std_msgs sensor_msgs)
-link_libraries(physics_msgs)
+link_libraries(mav_msgs nav_msgs std_msgs sensor_msgs physics_msgs)
 
 add_library(gazebo_geotagged_images_plugin SHARED src/gazebo_geotagged_images_plugin.cpp)
 add_library(gazebo_gps_plugin SHARED src/gazebo_gps_plugin.cpp)
 add_library(gazebo_irlock_plugin SHARED src/gazebo_irlock_plugin.cpp)
 add_library(gazebo_lidar_plugin SHARED src/gazebo_lidar_plugin.cpp)
-add_library(gazebo_opticalflow_plugin SHARED src/gazebo_opticalflow_plugin.cpp)
+# add_library(gazebo_opticalflow_plugin SHARED src/gazebo_opticalflow_plugin.cpp)
 add_library(gazebo_sonar_plugin SHARED src/gazebo_sonar_plugin.cpp)
 add_library(gazebo_uuv_plugin SHARED src/gazebo_uuv_plugin.cpp)
 add_library(gazebo_vision_plugin SHARED src/gazebo_vision_plugin.cpp)
@@ -326,7 +309,7 @@ set(plugins
   gazebo_gps_plugin
   gazebo_irlock_plugin
   gazebo_lidar_plugin
-  gazebo_opticalflow_plugin
+  # gazebo_opticalflow_plugin
   gazebo_sonar_plugin
   gazebo_uuv_plugin
   gazebo_vision_plugin
@@ -339,33 +322,13 @@ set(plugins
   gazebo_wind_plugin
   gazebo_magnetometer_plugin
   gazebo_barometer_plugin
-  )
+)
 
 foreach(plugin ${plugins})
   target_link_libraries(${plugin} ${Boost_LIBRARIES} ${GAZEBO_LIBRARIES} ${TinyXML_LIBRARIES})
 endforeach()
-target_link_libraries(gazebo_opticalflow_plugin ${OpticalFlow_LIBS})
 
-# If BUILD_ROS_INTERFACE set to ON, build plugins that have ROS dependencies
-# Current plugins that can be used with ROS interface: gazebo_motor_failure_plugin
-if (BUILD_ROS_INTERFACE)
-  add_library(gazebo_motor_failure_plugin SHARED src/gazebo_motor_failure_plugin.cpp)
-  target_link_libraries(gazebo_motor_failure_plugin ${GAZEBO_libraries} ${roscpp_LIBRARIES})
-  list(APPEND plugins gazebo_motor_failure_plugin)
-  message(STATUS "adding gazebo_motor_failure_plugin to build")
-
-  include_directories(
-    include
-    ${geometry_msgs_INCLUDE_DIRS}
-    ${sensor_msgs_INCLUDE_DIRS}
-  )
-
-  target_link_libraries(gazebo_motor_failure_plugin
-    ${catkin_LIBRARIES}
-    ${roscpp_LIBRARIES}
-    ${GAZEBO_libraries}
-  )
-endif()
+# target_link_libraries(gazebo_opticalflow_plugin ${OpticalFlow_LIBS})
 
 if (GSTREAMER_FOUND)
   add_library(gazebo_gst_camera_plugin SHARED src/gazebo_gst_camera_plugin.cpp)
@@ -406,14 +369,6 @@ foreach(plugin ${plugins})
   add_dependencies(${plugin} physics_msgs)
 endforeach()
 
-# Configure the setup script
-if (catkin_FOUND)
-  catkin_add_env_hooks(50_sitl_gazebo_setup
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake
-    SHELLS sh)
-endif()
-
-
 ################
 ## Unit Tests ##
 ################
@@ -426,26 +381,22 @@ add_subdirectory(unit_tests)
 ## Install ##
 #############
 
-set(PLUGIN_PATH ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/plugins)
-set(MODEL_PATH ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/models)
-set(RESOURCE_PATH ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME})
+install(DIRECTORY models
+ DESTINATION share/${PROJECT_NAME}
+)
 
-file(REMOVE_RECURSE ${PROJECT_SOURCE_DIR}/models/.DS_Store)
-file(GLOB models_list LIST_DIRECTORIES true ${PROJECT_SOURCE_DIR}/models/*)
+install(TARGETS
+  ${plugins}
+  mav_msgs
+  nav_msgs
+  std_msgs
+  sensor_msgs
+  physics_msgs
+ ARCHIVE DESTINATION lib
+ LIBRARY DESTINATION lib
+ RUNTIME DESTINATION bin)
 
-file(REMOVE_RECURSE ${PROJECT_SOURCE_DIR}/worlds/.DS_Store)
-file(GLOB worlds_list LIST_DIRECTORIES true ${PROJECT_SOURCE_DIR}/worlds/*)
-
-install(TARGETS ${plugins} mav_msgs nav_msgs std_msgs sensor_msgs DESTINATION ${PLUGIN_PATH})
-install(DIRECTORY ${models_list} DESTINATION ${MODEL_PATH})
-install(FILES ${worlds_list} DESTINATION ${RESOURCE_PATH}/worlds)
-
-configure_file(src/setup.sh.in "${CMAKE_CURRENT_BINARY_DIR}/setup.sh" @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/setup.sh DESTINATION ${RESOURCE_PATH})
-
-install(FILES ${PROJECT_SOURCE_DIR}/package.xml DESTINATION ${RESOURCE_PATH})
-
-#############
+############
 ## Testing ##
 #############
 
@@ -474,4 +425,5 @@ set(CPACK_RPM_PACKAGE_DESCRIPTION "Gazebo plugins for px4 sitl.")
 set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${GAZEBO_MAJOR_VERSION}-${PROJECT_VERSION}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${GAZEBO_MAJOR_VERSION}-${PROJECT_VERSION}")
 
-include(CPack)
+ament_environment_hooks(cmake/50_sitl_gazebo_setup.sh.in)
+ament_package()
